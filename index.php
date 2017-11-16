@@ -44,6 +44,10 @@
 					$controladorInicio->mostrarFormRegistrarDocente();
 					break;
 
+				case 'modificar_docente':
+					$controladorInicio->mostrarFormModificarDocente();
+					break;
+
 				case 'listado_docentes':
 					$controladorInicio->mostrarFormListadoDocentes();
 					break;
@@ -183,6 +187,10 @@
 		if($tipo == "registrar_docente"){
 			$controladorInicio->guardarDocente($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password'], $_POST['admin']);
 		}
+	
+		if($tipo == "modificar_docente"){
+			$controladorInicio->modificarDocente($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password'], $_POST['id']);
+		}
 
 		if($tipo == "agregar_admin"){
 			$controladorInicio->agregarAdmin($_POST['docente']);
@@ -240,4 +248,19 @@
 			
 
 		}
+	}
+
+
+
+
+		/*************************************************************************************************
+	 ***********************    METODOS DELETE   *******************************************************
+	 *************************************************************************************************
+	*/
+
+	//eliminar usuarios desde las vistas de listados (docentes, estudiantes, etc)
+
+	if(isset($_DELETE['docente'])) {
+		$id_docente = $_DELETE['id'];
+		$controladorInicio->eliminarDocente($id_docente);
 	}

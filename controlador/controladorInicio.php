@@ -469,6 +469,52 @@ class controladorInicio extends controlador{
 	}
 
 
+
+	public function mostrarFormModificarDocente(){
+
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/modificar_docente.html');
+		$id = $_GET['id'];
+		$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
+		$consulta2 = "SELECT * FROM docente WHERE id_docente = $id";
+
+		$this->modelo->conectar();
+		$respuesta1 = $this->modelo->consultar($consulta1);
+		$respuesta2 = $this->modelo->consultar($consulta2);
+		$this->modelo->desconectar();
+
+		$nombre = '';
+		$correo = '';
+		$telefono = '';
+		$contraseña = '';
+		$id = '';
+
+		$nombre_admin = '';
+		$correo_admin = '';
+		while ($row = mysqli_fetch_array($respuesta1)) {
+			$nombre_admin = $row['nombre'];
+			$correo_admin = $row['correo'];
+		}
+		while ($row = mysqli_fetch_array($respuesta2)) {
+			$nombre = $row['nombre'];
+			$correo = $row['correo'];
+			$telefono = $row['telefono'];
+			$contraseña = $row['contrasena'];
+			$id = $row['id_docente'];
+		}
+
+		$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
+		$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
+		$plantilla = $this->reemplazar( $plantilla, '{{telefono}}', $telefono);
+		$plantilla = $this->reemplazar( $plantilla, '{{contraseña}}', $contraseña);
+		$plantilla = $this->reemplazar( $plantilla, '{{id}}', $id);
+
+		$plantilla = $this->reemplazar( $plantilla, '{{nombre_admin}}', $nombre_admin);
+		$plantilla = $this->reemplazar( $plantilla, '{{correo_admin}}', $correo_admin);
+		$this->mostrarVista($plantilla);
+		
+	}
+
+
 	public function mostrarFormInvitarDocente(){
 
 		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/invitar_docente.html');
@@ -681,10 +727,12 @@ class controladorInicio extends controlador{
 	public function mostrarFormListadoDocentes(){
 
 		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/listado_docentes.html');
-		$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['docente']."";
+		$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
+		$docentes = "SELECT nombre, correo, telefono, id_docente FROM docente";
 
 		$this->modelo->conectar();
 		$respuesta1 = $this->modelo->consultar($consulta1);
+		$docentes = $this->modelo->consultar($docentes);
 		$this->modelo->desconectar();
 
 		$nombre = '';
@@ -694,8 +742,40 @@ class controladorInicio extends controlador{
 			$correo = $row['correo'];
 		}
 
+
+		$nombre_docentes = '';
+		$correo_docentes = '';
+		$telefono_docentes = '';
+		$listado = '';
+		while ($row = mysqli_fetch_array($docentes)) {
+			$nombre_docente = $row['nombre'];
+			$correo_docente = $row['correo'];
+			$telefono_docente = $row['telefono'];
+			$id_docente = $row['id_docente'];
+			$nombre_docente_string = '"'.$nombre_docente.'"';
+			$listado .= "
+				<tr>
+					<td>
+						$nombre_docente
+					</td>
+					<td>
+						$correo_docente
+					</td>
+					<td>
+						$telefono_docente
+					</td>
+					<td class='text-center'>
+						<a href='index.php?boton=modificar_docente&id=$id_docente' class='btn btn-sm bg-blue waves-effect'>Editar</a>
+						<button type='button' class='btn btn-sm bg-red waves-effect' onclick='borrarDocente($id_docente, $nombre_docente_string);'>Eliminar</button>
+					</td>
+				</tr>
+			";
+
+		}
+
 		$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
 		$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
+		$plantilla = $this->reemplazar( $plantilla, '{{listado_docentes}}', $listado);
 		$this->mostrarVista($plantilla);
 		
 	}
@@ -739,6 +819,35 @@ class controladorInicio extends controlador{
 			header('Location: index.php');
 		}
 	}
+
+
+
+
+	public function modificarDocente($nombre, $telefono, $correo, $password, $id_docente){
+		 
+		$consulta2 = "UPDATE docente set nombre = '$nombre', 
+			correo = '$correo', 
+			telefono = '$telefono' ";
+
+			if( !empty($password) ) {
+				$passh= password_hash($password, PASSWORD_DEFAULT);
+				$consulta2 .= "contrasena = '$passh' ";
+			}
+
+		$this->modelo->conectar();
+		$this->modelo->consultar($consulta2);
+		$this->modelo->desconectar();
+
+		
+			//Guardo un mensaje para ser mostrado al registrar el usuario
+		echo'<script type="text/javascript">
+							alert("Docente modificado correctamente.");
+					</script>';
+		header('Location: index.php');
+	}
+
+
+
 
 	public function agregarAdmin($docente){
 
@@ -1565,4 +1674,23 @@ class controladorInicio extends controlador{
 		}
 	}
 
+
+
+
+
+
+
+	//Eliminar Docente
+
+	public function eliminarDocente( $id_docente ) {
+		$consulta1 = "DELETE FROM docente WHERE id_docente = $id_docente";
+		$this->modelo->conectar();
+		$resultado=$this->modelo->consultar($consulta1);
+		$this->modelo->desconectar();
+
+		echo'<script type="text/javascript">
+				alert("Docente eliminado correctamente.");
+		</script>';
+		header('Location: index.php');
+	}
 } 
