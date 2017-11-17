@@ -16,7 +16,7 @@ class modelo {
 	/**
 	 * @var String
 	 */
-	private $pw = "";
+	private $pw = "julian21olarte";
 
 	/**
 	 * @var String

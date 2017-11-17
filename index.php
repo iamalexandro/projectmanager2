@@ -47,6 +47,10 @@
 				case 'modificar_docente':
 					$controladorInicio->mostrarFormModificarDocente();
 					break;
+			
+					case 'modificar_curso':
+					$controladorInicio->mostrarFormModificarCurso();
+					break;
 
 				case 'listado_docentes':
 					$controladorInicio->mostrarFormListadoDocentes();
@@ -62,6 +66,10 @@
 
 				case 'registrar_curso':
 					$controladorInicio->mostrarFormRegistrarCurso();
+					break;
+				
+					case 'listado_cursos':
+					$controladorInicio->mostrarFormListadoCursos();
 					break;
 
 				case 'generar_reportes':
@@ -190,6 +198,10 @@
 	
 		if($tipo == "modificar_docente"){
 			$controladorInicio->modificarDocente($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password'], $_POST['id']);
+		}
+		
+		if($tipo == "modificar_curso"){
+			$controladorInicio->modificarCurso($_POST['nombre'], $_POST['descripcion'], $_POST['id']);
 		}
 
 		if($tipo == "agregar_admin"){

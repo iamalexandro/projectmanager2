@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -136,6 +136,12 @@
                             <span>Registrar Proyecto</span>
                         </a>
                     </li>
+                    <li>
+                        <a href="index.php?boton=agregar_alumnos">
+                            <i class="material-icons">layers</i>
+                            <span>Agregar Alumnos</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
             <!-- #Menu -->
@@ -155,44 +161,38 @@
     </section>
     <section class="content">
         <div class="container-fluid">
-            <div class="block-header">
-                <h2>INVITAR DOCENTE</h2>
+            <div class="row">
+                <div class="block-header">
+                    <h2>LISTADO DE CURSOS</h2>
+                </div>
             </div>
-            <!-- Input -->
-            <!-- Select -->
+            <div class="row">
+                <div class="col-lg-4">
+                        <a href="index.php?boton=registrar_curso" class="btn btn-sm bg-green waves-effect'">Agregar Curso</a>
+                </div>
+                <br>
+            </div>
             <div class="row clearfix">
-                <div class="col-xs-12">
+                <div class="col-lg-12">
                     <div class="card">
                         <div class="body">
-                            <div class="row clearfix">
-                                <div class="col-sm-12">
-                                    <form action="index.php" method="POST">
-                                        
-                                        <input type="hidden" name="solicitudes" value="invitar_docente">
-
-                                        <div class="input-group">
-                                            <span class="input-group-addon">
-                                                <i class="material-icons">email</i>
-                                            </span>
-                                            <div class="form-line">
-                                                <input type="text" class="form-control" name="email" placeholder="Email" required autofocus>
-                                            </div>
-                                        </div>
-                                    
-                                        <div>
-                                            <div class="col-md-4 col-md-offset-8">
-                                                <button class="btn btn-block btn-lg bg-blue waves-effect" type="submit">INVITAR DOCENTE</button>
-                                            </div>
-                                        </div>
-                                    </form>
-
-                                </div>
-                            </div>
+                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">             
+                               <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Descripcion</th>
+                                    <th class='text-center'>Acciones</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    {{listado_cursos}}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-            <!-- #END# Select -->
             </div>
+        </div>
     </section>
 
     <!-- Jquery Core Js -->
@@ -225,6 +225,22 @@
 
     <!-- Demo Js -->
     <script src="recursos/js/demo.js"></script>
+
+    <script>
+            function borrarDocente( id_docente, nombre ) {
+                if( confirm( 'desea eliminar el docente '+ nombre+' ?' ) ) {
+                    $.ajax({
+                        type: "DELETE",
+                        url: "index.php",
+                        data: {id: id_docente},
+                        dataType: "dataType",
+                        success: function (response) {
+                            window.location.href='index.php';
+                        }
+                    });
+                }
+            }
+        </script>
 </body>
 
 </html>
