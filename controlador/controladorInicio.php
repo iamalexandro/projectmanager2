@@ -31,7 +31,19 @@ class controladorInicio extends controlador{
 		$this->modelo = new modelo();
 	}
 
-	
+
+
+
+
+
+	/*************************************************************************************************	
+	 *************************************************************************************************
+	 ***********************    METODOS PARA MOSTRAR VISTAS   ****************************************
+	 *************************************************************************************************
+	 *************************************************************************************************	
+	 */
+
+
 	/**
 	 * Muestro la vista de inicio
 	 * @return void
@@ -42,315 +54,339 @@ class controladorInicio extends controlador{
 		$this->mostrarVista($plantilla);
 	}
 
+
+	public function mostrarFormRecuperarPass(){
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/recuperar_contrasena.html');
+		$this->mostrarVista($plantilla);
+	}
+
+
+
+	/*************************************************************************************************
+	 ********************** METODOS PARA MOSTRAR VISTAS DE ADMINISTRADOR    **************************
+	 *************************************************************************************************
+	*/
 	
 	/**
 	 * Muestro la vista de admin
-	 * @return void
 	*/ 
 	public function inicioAdmin(){
 
 		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/principal_admin.html');
 
-		$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-		$consulta2 = "SELECT COUNT(correo) FROM docente";
-		$consulta3 = "SELECT COUNT(*) FROM curso";
-		$consulta4 = "SELECT COUNT(*) FROM proyecto";
-		$consulta5 = "SELECT COUNT(*) FROM estudiante";
-
-
-
-		$this->modelo->conectar();
-		$respuesta1 = $this->modelo->consultar($consulta1);
-		$respuesta2 = $this->modelo->consultar($consulta2);
-		$respuesta3 = $this->modelo->consultar($consulta3);
-		$respuesta4 = $this->modelo->consultar($consulta4);
-		$respuesta5 = $this->modelo->consultar($consulta5);
-
-		$this->modelo->desconectar();
-
-		$nombre = '';
-		$correo = '';
-		while ($row = mysqli_fetch_array($respuesta1)) {
-			$nombre = $row['nombre'];
-			$correo = $row['correo'];
-		}
-
-		$docentes='';
-		if(!$respuesta2 || mysqli_num_rows($respuesta2) == 0){
-
-			$docentes = '<div class="icon">
-                            <i class="material-icons">group</i>
-                        </div>
-                        <div class="content">
-                            <div class="text">DOCENTES</div>
-                            <div class="number count-to" data-from="0" data-to="0" data-speed="15" data-fresh-interval="20"></div>
-                        </div>';
-		}else{
-			
-			while($row = mysqli_fetch_array($respuesta2)){
-			$docentes = '<div class="icon">
-                            <i class="material-icons">group</i>
-                        </div>
-                        <div class="content">
-                            <div class="text">DOCENTES</div>
-                            <div class="number count-to" data-from="0" data-to="'.$row['COUNT(correo)'].'" data-speed="15" data-fresh-interval="20"></div>
-                        </div>';
-			}
-		}
+		$nuevaPlantilla = $this->calcularTarjetas($plantilla); 
 		
+		$plantillaConDatos = $this->montarDatos($nuevaPlantilla, 'admin', $_SESSION['admin']); 
 
-		$cursos='';
-		if(!$respuesta3 || mysqli_num_rows($respuesta3) == 0){
-
-			$cursos = ' <div class="icon">
-	                            <i class="material-icons">book</i>
-	                        </div>
-	                        <div class="content">
-	                            <div class="text">CURSOS</div>
-	                            <div class="number count-to" data-from="0" data-to="0" data-speed="1000" data-fresh-interval="20"></div>
-	                        </div>';
-		}else{
-			while($row = mysqli_fetch_array($respuesta3)){
-				$cursos = ' <div class="icon">
-	                            <i class="material-icons">book</i>
-	                        </div>
-	                        <div class="content">
-	                            <div class="text">CURSOS</div>
-	                            <div class="number count-to" data-from="0" data-to="'.$row['COUNT(*)'].'" data-speed="1000" data-fresh-interval="20"></div>
-	                        </div>';
-	        }
-		}
-
-		$proyectos='';
-		if(!$respuesta4 || mysqli_num_rows($respuesta4) == 0){
-
-			$proyectos= ' <div class="icon">
-	                            <i class="material-icons">folder</i>
-	                        </div>
-	                        <div class="content">
-	                            <div class="text">PROYECTOS</div>
-	                            <div class="number count-to" data-from="0" data-to="0" data-speed="1000" data-fresh-interval="20"></div>
-	                        </div>';
-		}else{
-			while($row = mysqli_fetch_array($respuesta4)){
-				$proyectos = ' <div class="icon">
-	                            <i class="material-icons">folder</i>
-	                        </div>
-	                        <div class="content">
-	                            <div class="text">PROYECTOS</div>
-	                            <div class="number count-to" data-from="0" data-to="'.$row['COUNT(*)'].'" data-speed="1000" data-fresh-interval="20"></div>
-	                        </div>';
-			}
-		}
-
-
-		$alumnos='';
-		if(!$respuesta5 || mysqli_num_rows($respuesta5) == 0){
-
-			$alumnos =  '  <div class="icon">
-	                            <i class="material-icons">person_add</i>
-	                        </div>
-	                        <div class="content">
-	                            <div class="text">ALUMNOS</div>
-	                            <div class="number count-to" data-from="0" data-to="0" data-speed="1000" data-fresh-interval="20"></div>
-	                        </div>';
-		}else{
-			while($row = mysqli_fetch_array($respuesta5)){
-				$alumnos = '  <div class="icon">
-	                            <i class="material-icons">person_add</i>
-	                        </div>
-	                        <div class="content">
-	                            <div class="text">ALUMNOS</div>
-	                            <div class="number count-to" data-from="0" data-to="'.$row['COUNT(*)'].'" data-speed="1000" data-fresh-interval="20"></div>
-	                        </div>';
-			}
-		}
-
-		$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-		$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-		$plantilla = $this->reemplazar( $plantilla, '{{docentes}}', $docentes);
-		$plantilla = $this->reemplazar( $plantilla, '{{cursos}}', $cursos);
-		$plantilla = $this->reemplazar( $plantilla, '{{proyectos}}', $proyectos);
-		$plantilla = $this->reemplazar( $plantilla, '{{alumnos}}', $alumnos);
-		$this->mostrarVista($plantilla);
+		$this->mostrarVista($plantillaConDatos);
 	}
 	
+	/**
+	 * Muestro la vista de gestionar docentes
+	*/ 
+	public function mostrarFormListadoDocentes(){
+		
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/listado_docentes.html');
+		$docentes = "SELECT nombre, correo, telefono, id_docente FROM docente";
+
+		$this->modelo->conectar();
+		$docentes = $this->modelo->consultar($docentes);
+		$this->modelo->desconectar();
+
+		$nombre_docentes = '';
+		$correo_docentes = '';
+		$telefono_docentes = '';
+		$listado = '';
+		while ($row = mysqli_fetch_array($docentes)) {
+			$nombre_docente = $row['nombre'];
+			$correo_docente = $row['correo'];
+			$telefono_docente = $row['telefono'];
+			$id_docente = $row['id_docente'];
+			$nombre_docente_string = '"'.$nombre_docente.'"';
+			$listado .= "
+				<tr>
+					<td>
+						$nombre_docente
+					</td>
+					<td>
+						$correo_docente
+					</td>
+					<td>
+						$telefono_docente
+					</td>
+					<td class='text-center'>
+						<a href='index.php?boton=modificar_docente&id=$id_docente' class='btn btn-sm bg-blue waves-effect'>Editar</a>
+						<button type='button' class='btn btn-sm bg-red waves-effect' onclick='borrarDocente($id_docente, $nombre_docente_string);'>Eliminar</button>
+					</td>
+				</tr>
+			";
+
+		}
+		
+		$plantilla = $this->reemplazar( $plantilla, '{{listado_docentes}}', $listado);
+		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
+		$this->mostrarVista($plantillaConDatos);
+		
+	}
+
+	/**
+	 * Muestra la vista de registrar docente
+	*/
+	public function mostrarFormRegistrarDocente(){
+		
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/registrar_docente.html');
+		
+		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
+
+		$this->mostrarVista($plantillaConDatos);		
+	}
+	
+	/**
+	 * Muestra la vista de rmodificar docente
+	*/
+	public function mostrarFormModificarDocente(){
+		
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/modificar_docente.html');
+		$id = $_GET['id'];
+				
+		$consulta2 = "SELECT * FROM docente WHERE id_docente = $id";
+		
+		$this->modelo->conectar();
+		$respuesta2 = $this->modelo->consultar($consulta2);
+		$this->modelo->desconectar();
+		
+		$nombre = '';
+		$correo = '';
+		$telefono = '';
+		$contraseña = '';
+		$id = '';
+		
+		while ($row = mysqli_fetch_array($respuesta2)) {
+			$nombre = $row['nombre'];
+			$correo = $row['correo'];
+			$telefono = $row['telefono'];
+			$contraseña = $row['contrasena'];
+			$id = $row['id_docente'];
+		}
+
+		$plantilla = $this->reemplazar( $plantilla, '{{nombre2}}', $nombre);
+		$plantilla = $this->reemplazar( $plantilla, '{{correo2}}', $correo);
+		$plantilla = $this->reemplazar( $plantilla, '{{telefono}}', $telefono);
+		$plantilla = $this->reemplazar( $plantilla, '{{contraseña}}', $contraseña);
+		$plantilla = $this->reemplazar( $plantilla, '{{id}}', $id);
+
+		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
+
+		$this->mostrarVista($plantillaConDatos);
+	}
+
+	/**
+	 * Muestra la vista de invitar docente
+	*/
+	public function mostrarFormInvitarDocente(){
+		
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/invitar_docente.html');
+		
+		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
+
+		$this->mostrarVista($plantillaConDatos);
+	}
+
+	/**
+	 * Muestra la vista de agregar un docente como nuevo admin
+	*/
+	public function mostrarFormAgregarAdmin(){
+		
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/agregar_admin.html');
+		
+		$consulta1 = "SELECT * FROM docente d WHERE d.id_docente NOT IN (SELECT a.id_docente FROM administrador a)";
+		
+		$this->modelo->conectar();
+		$respuesta1 = $this->modelo->consultar($consulta1);
+		$this->modelo->desconectar();
+
+		$lista = '';
+		while ($row = mysqli_fetch_array($respuesta1)) {
+			$lista .= '<option value="'.$row['id_docente'].'" >'.$row['nombre'].'</option>';
+		}
+
+		$plantilla = $this->reemplazar( $plantilla, '{{lista_docentes}}', $lista);
+
+		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
+
+		$this->mostrarVista($plantillaConDatos);
+	}
+
+	/**
+	 * Muestra la vista de registrar un nuevo curso
+	*/
+	public function mostrarFormRegistrarCurso(){
+		
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/registrar_curso.html');
+		
+		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
+		
+		$this->mostrarVista($plantillaConDatos);
+	}
+
+	/**
+	 * Muestra la vista de generar reportes
+	*/
+	public function mostrarFormGenerarReportes(){
+		
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
+		
+		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
+		
+		$this->mostrarVista($plantillaConDatos);
+	}
+
+
+	/*************************************************************************************************
+	 **********************    METODOS PARA MOSTRAR VISTAS DE DOCENTE    *****************************
+	 *************************************************************************************************
+	*/
 	
 	/**
 	 * Muestro la vista de docente
-	 * @return type
 	 */
 	public function inicioDocente(){
 
 		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/principal_docente.html');
 
-		$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['docente']."";
-		$consulta2 = "SELECT COUNT(correo) FROM docente";
-		$consulta3 = "SELECT COUNT(*) FROM curso";
-		$consulta4 = "SELECT COUNT(*) FROM proyecto";
-		$consulta5 = "SELECT COUNT(*) FROM estudiante";
+		$nuevaPlantilla = $this->calcularTarjetas($plantillaConDatos);
+
+		$plantillaConDatos = $this->montarDatos($nuevaPlantilla, 'docente', $_SESSION['docente']); 
+		
+		$this->mostrarVista($plantillaConDatos);
+	}
+
+	/**
+	 * Muestra la vista de inscribirse a un curso
+	*/
+	public function mostrarFormInscribirCurso($letra){
+		
+		if($letra == 'a'){
+
+			$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/inscribirse_a_curso_admin.html');
+			$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
+
+		}else{
+			if($letra == 'd'){
+				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/inscribirse_a_curso_docente.html');
+				$plantillaConDatos = $this->montarDatos($plantilla, 'docente', $_SESSION['docente']);
+			}else{
+				if($letra = 'e'){
+					$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/inscribirse_a_curso_estudiante.html');
+					$plantillaConDatos = $this->montarDatos($plantilla, 'estudiante', $_SESSION['estudiante']);
+				}
+			}
+		}
+
+		$consulta1 = "SELECT * FROM curso";
 
 		$this->modelo->conectar();
 		$respuesta1 = $this->modelo->consultar($consulta1);
-		$respuesta2 = $this->modelo->consultar($consulta2);
-		$respuesta3 = $this->modelo->consultar($consulta3);
-		$respuesta4 = $this->modelo->consultar($consulta4);
-		$respuesta5 = $this->modelo->consultar($consulta5);
 		$this->modelo->desconectar();
 
-		$nombre = '';
-		$correo = '';
+		$lista = '';
 		while ($row = mysqli_fetch_array($respuesta1)) {
-			$nombre = $row['nombre'];
-			$correo = $row['correo'];
+			$lista .= '<option value="'.$row['id_curso'].'" >'.$row['codigo'].' - '.$row['nombre'].'</option>';
 		}
 
+		$plantillaConDatos = $this->reemplazar( $plantillaConDatos, '{{lista_cursos}}', $lista);
+		$this->mostrarVista($plantillaConDatos);	
+	}
 
-		$docentes='';
-		if(!$respuesta2 || mysqli_num_rows($respuesta2) == 0){
+	/**
+	 * Muestra la vista de registrar un proyecto
+	*/
+	public function mostrarFormRegistrarProyectos($letra){
+		
+		if($letra == 'a'){
+			$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/registrar_proyecto_admin.html');
+			$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);			
+			$consulta2 = "SELECT c.id_curso, c.codigo, c.nombre FROM curso_docente cd, curso c WHERE cd.id_curso = c.id_curso AND cd.id_docente = ".$_SESSION['admin']." AND cd.id_docente IN (SELECT d.id_docente FROM docente d)";
 
-			$docentes = '<div class="icon">
-                            <i class="material-icons">group</i>
-                        </div>
-                        <div class="content">
-                            <div class="text">DOCENTES</div>
-                            <div class="number count-to" data-from="0" data-to="0" data-speed="15" data-fresh-interval="20"></div>
-                        </div>';
 		}else{
-			
-			while($row = mysqli_fetch_array($respuesta2)){
-			$docentes = '<div class="icon">
-                            <i class="material-icons">group</i>
-                        </div>
-                        <div class="content">
-                            <div class="text">DOCENTES</div>
-                            <div class="number count-to" data-from="0" data-to="'.$row['COUNT(correo)'].'" data-speed="15" data-fresh-interval="20"></div>
-                        </div>';
+			if($letra == 'd'){
+				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/registrar_proyecto_docente.html');
+				$plantillaConDatos = $this->montarDatos($plantilla, 'docente', $_SESSION['docente']);				
+				$consulta2 = "SELECT c.id_curso, c.codigo, c.nombre FROM curso_docente cd, curso c WHERE cd.id_curso = c.id_curso AND cd.id_docente = ".$_SESSION['docente']." AND cd.id_docente IN (SELECT d.id_docente FROM docente d)";
 			}
 		}
 		
+		$this->modelo->conectar();
+		$respuesta2 = $this->modelo->consultar($consulta2);
+		$this->modelo->desconectar();
 
-		$cursos='';
-		if(!$respuesta3 || mysqli_num_rows($respuesta3) == 0){
-
-			$cursos = ' <div class="icon">
-	                            <i class="material-icons">book</i>
-	                        </div>
-	                        <div class="content">
-	                            <div class="text">CURSOS</div>
-	                            <div class="number count-to" data-from="0" data-to="0" data-speed="1000" data-fresh-interval="20"></div>
-	                        </div>';
-		}else{
-			while($row = mysqli_fetch_array($respuesta3)){
-				$cursos = ' <div class="icon">
-	                            <i class="material-icons">book</i>
-	                        </div>
-	                        <div class="content">
-	                            <div class="text">CURSOS</div>
-	                            <div class="number count-to" data-from="0" data-to="'.$row['COUNT(*)'].'" data-speed="1000" data-fresh-interval="20"></div>
-	                        </div>';
-	        }
+		$lista = '';
+		while ($row = mysqli_fetch_array($respuesta2)) {
+			$lista .= '<option value="'.$row['id_curso'].'" >'.$row['codigo'].' - '.$row['nombre'].'</option>';
 		}
 
-		$proyectos='';
-		if(!$respuesta4 || mysqli_num_rows($respuesta4) == 0){
-
-			$proyectos= ' <div class="icon">
-	                            <i class="material-icons">folder</i>
-	                        </div>
-	                        <div class="content">
-	                            <div class="text">PROYECTOS</div>
-	                            <div class="number count-to" data-from="0" data-to="0" data-speed="1000" data-fresh-interval="20"></div>
-	                        </div>';
-		}else{
-			while($row = mysqli_fetch_array($respuesta4)){
-				$proyectos = ' <div class="icon">
-	                            <i class="material-icons">folder</i>
-	                        </div>
-	                        <div class="content">
-	                            <div class="text">PROYECTOS</div>
-	                            <div class="number count-to" data-from="0" data-to="'.$row['COUNT(*)'].'" data-speed="1000" data-fresh-interval="20"></div>
-	                        </div>';
-			}
-		}
-
-
-		$alumnos='';
-		if(!$respuesta5 || mysqli_num_rows($respuesta5) == 0){
-
-			$alumnos =  '  <div class="icon">
-	                            <i class="material-icons">person_add</i>
-	                        </div>
-	                        <div class="content">
-	                            <div class="text">ALUMNOS</div>
-	                            <div class="number count-to" data-from="0" data-to="0" data-speed="1000" data-fresh-interval="20"></div>
-	                        </div>';
-		}else{
-			while($row = mysqli_fetch_array($respuesta5)){
-				$alumnos = '  <div class="icon">
-	                            <i class="material-icons">person_add</i>
-	                        </div>
-	                        <div class="content">
-	                            <div class="text">ALUMNOS</div>
-	                            <div class="number count-to" data-from="0" data-to="'.$row['COUNT(*)'].'" data-speed="1000" data-fresh-interval="20"></div>
-	                        </div>';
-			}
-		}
-
-		$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-		$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-		$plantilla = $this->reemplazar( $plantilla, '{{docentes}}', $docentes);
-		$plantilla = $this->reemplazar( $plantilla, '{{cursos}}', $cursos);
-		$plantilla = $this->reemplazar( $plantilla, '{{proyectos}}', $proyectos);
-		$plantilla = $this->reemplazar( $plantilla, '{{alumnos}}', $alumnos);
-		$this->mostrarVista($plantilla);
+		$plantillaConDatos = $this->reemplazar( $plantillaConDatos, '{{lista_cursos}}', $lista);
+		$this->mostrarVista($plantillaConDatos);
+		
 	}
+
+
+	/*************************************************************************************************
+	 **********************    METODOS PARA MOSTRAR VISTAS DE ESTUDIANTE    **************************
+	 *************************************************************************************************
+	*/
 
 
 	/**
 	 * Muestro la vista de estudiante
-	 * @return type
+	 * @return 
 	 */
 	public function inicioEstudiante(){
 
 		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/principal_estudiante.html');
 
-		$consulta1 = "SELECT nombre, correo FROM estudiante WHERE id_estudiante = ".$_SESSION['estudiante']."";
-		$consulta2 = "SELECT COUNT(correo) FROM estudiante";
+		$plantillaConDatos = $this->montarDatos($plantilla, 'estudiante', $_SESSION['estudiante']); 
 
-		$this->modelo->conectar();
-		$respuesta1 = $this->modelo->consultar($consulta1);
-		$respuesta2 = $this->modelo->consultar($consulta2);
-		$this->modelo->desconectar();
-
-		$nombre = '';
-		$correo = '';
-		while ($row = mysqli_fetch_array($respuesta1)) {
-			$nombre = $row['nombre'];
-			$correo = $row['correo'];
-		}
-
-		$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-		$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-		$this->mostrarVista($plantilla);
+		$this->mostrarVista($plantillaConDatos);
 	}
 	
 	/**
-	 * Funcion retorna true si un admin o un user iniciaron sesion
-	 * @return boolean
-	 */
-	public function hayLogin(){
-
-		return isset( $_SESSION['admin']) || isset( $_SESSION['docente']);
+	 * Muestra la vista de registrar un estudiante
+	*/
+	public function mostrarFormRegistrarEstudiante(){
+		
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/registro_estudiante.html');
+		$this->mostrarVista($plantilla);
 	}
+		
 
-
-
-
+	/**
+	 * Muestra la vista de los proyectos de los estudiantes
+	*/
+	public function mostrarFormMisProyectos(){
+		
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/mis_proyectos.html');
+		
+		$plantillaConDatos = $this->montarDatos($plantilla, 'estudiante', $_SESSION['estudiante']); 
+		
+		$this->mostrarVista($plantillaConDatos);
+		
+	}
 	/*************************************************************************************************
 	 ***********************    METODOS DEL PROYECTO   ********************************************************
 	 *************************************************************************************************
 	*/
+
+
+	/**
+	 * Funcion retorna true si un admin o un user iniciaron sesion
+	 * @return boolean
+	 */
+	 public function hayLogin(){
+		
+		return isset( $_SESSION['admin']) || isset( $_SESSION['docente']);
+	}
+
 
 
 	/**
@@ -428,357 +464,14 @@ class controladorInicio extends controlador{
 	}
 
 
-	public function mostrarFormRecuperarPass(){
-		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/recuperar_contrasena.html');
-		$this->mostrarVista($plantilla);
-	}
 
 
-	
 /************************************************************************
  ******************* FUNCIONES ADMINISTRADOR ****************************
  ************************************************************************/
+
 	
 
-	public function mostrarFormRegistrarEstudiante(){
-
-		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/registro_estudiante.html');
-		$this->mostrarVista($plantilla);
-	}
-
-	public function mostrarFormRegistrarDocente(){
-
-		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/registrar_docente.html');
-		$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-
-		$this->modelo->conectar();
-		$respuesta1 = $this->modelo->consultar($consulta1);
-		$this->modelo->desconectar();
-
-		$nombre = '';
-		$correo = '';
-		while ($row = mysqli_fetch_array($respuesta1)) {
-			$nombre = $row['nombre'];
-			$correo = $row['correo'];
-		}
-
-		$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-		$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-		$this->mostrarVista($plantilla);
-		
-	}
-
-
-
-	public function mostrarFormModificarDocente(){
-
-		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/modificar_docente.html');
-		$id = $_GET['id'];
-		$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-		$consulta2 = "SELECT * FROM docente WHERE id_docente = $id";
-
-		$this->modelo->conectar();
-		$respuesta1 = $this->modelo->consultar($consulta1);
-		$respuesta2 = $this->modelo->consultar($consulta2);
-		$this->modelo->desconectar();
-
-		$nombre = '';
-		$correo = '';
-		$telefono = '';
-		$contraseña = '';
-		$id = '';
-
-		$nombre_admin = '';
-		$correo_admin = '';
-		while ($row = mysqli_fetch_array($respuesta1)) {
-			$nombre_admin = $row['nombre'];
-			$correo_admin = $row['correo'];
-		}
-		while ($row = mysqli_fetch_array($respuesta2)) {
-			$nombre = $row['nombre'];
-			$correo = $row['correo'];
-			$telefono = $row['telefono'];
-			$contraseña = $row['contrasena'];
-			$id = $row['id_docente'];
-		}
-
-		$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-		$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-		$plantilla = $this->reemplazar( $plantilla, '{{telefono}}', $telefono);
-		$plantilla = $this->reemplazar( $plantilla, '{{contraseña}}', $contraseña);
-		$plantilla = $this->reemplazar( $plantilla, '{{id}}', $id);
-
-		$plantilla = $this->reemplazar( $plantilla, '{{nombre_admin}}', $nombre_admin);
-		$plantilla = $this->reemplazar( $plantilla, '{{correo_admin}}', $correo_admin);
-		$this->mostrarVista($plantilla);
-		
-	}
-
-
-	public function mostrarFormInvitarDocente(){
-
-		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/invitar_docente.html');
-		$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-
-		$this->modelo->conectar();
-		$respuesta1 = $this->modelo->consultar($consulta1);
-		$this->modelo->desconectar();
-
-		$nombre = '';
-		$correo = '';
-		while ($row = mysqli_fetch_array($respuesta1)) {
-			$nombre = $row['nombre'];
-			$correo = $row['correo'];
-		}
-
-		$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-		$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-		$this->mostrarVista($plantilla);
-		
-	}
-
-
-	public function mostrarFormAgregarAdmin(){
-
-		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/agregar_admin.html');
-		$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-		$consulta2 = "SELECT * FROM docente d WHERE d.id_docente NOT IN (SELECT a.id_docente FROM administrador a)";
-		
-		$this->modelo->conectar();
-		$respuesta1 = $this->modelo->consultar($consulta1);
-		$respuesta2 = $this->modelo->consultar($consulta2);
-		$this->modelo->desconectar();
-
-		$nombre = '';
-		$correo = '';
-		while ($row = mysqli_fetch_array($respuesta1)) {
-			$nombre = $row['nombre'];
-			$correo = $row['correo'];
-		}
-
-		$lista = '';
-		while ($row = mysqli_fetch_array($respuesta2)) {
-			$lista .= '<option value="'.$row['id_docente'].'" >'.$row['nombre'].'</option>';
-		}
-
-		$plantilla = $this->reemplazar( $plantilla, '{{lista_docentes}}', $lista);
-		$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-		$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-		$this->mostrarVista($plantilla);
-		
-	}
-
-
-	public function mostrarFormRegistrarCurso(){
-
-		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/registrar_curso.html');
-		$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-
-		$this->modelo->conectar();
-		$respuesta1 = $this->modelo->consultar($consulta1);
-		$this->modelo->desconectar();
-
-		$nombre = '';
-		$correo = '';
-		while ($row = mysqli_fetch_array($respuesta1)) {
-			$nombre = $row['nombre'];
-			$correo = $row['correo'];
-		}
-
-		$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-		$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-		$this->mostrarVista($plantilla);
-		
-	}
-
-
-	public function mostrarFormGenerarReportes(){
-
-		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
-		$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-
-		$this->modelo->conectar();
-		$respuesta1 = $this->modelo->consultar($consulta1);
-		$this->modelo->desconectar();
-
-		$nombre = '';
-		$correo = '';
-		while ($row = mysqli_fetch_array($respuesta1)) {
-			$nombre = $row['nombre'];
-			$correo = $row['correo'];
-		}
-
-		$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-		$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-		$this->mostrarVista($plantilla);
-		
-	}
-
-
-	public function mostrarFormInscribirCurso($letra){
-
-		if($letra == 'a'){
-
-			$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/inscribirse_a_curso_admin.html');
-			$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-
-		}else{
-			if($letra == 'd'){
-				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/inscribirse_a_curso_docente.html');
-				$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['docente']."";
-			}else{
-				if($letra = 'e'){
-					$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/inscribirse_a_curso_estudiante.html');
-					$consulta1 = "SELECT nombre, correo FROM estudiante WHERE id_estudiante = ".$_SESSION['estudiante']."";
-				}
-			}
-		}
-
-
-		$consulta2 = "SELECT * FROM curso";
-
-		$this->modelo->conectar();
-		$respuesta1 = $this->modelo->consultar($consulta1);
-		$respuesta2 = $this->modelo->consultar($consulta2);
-		$this->modelo->desconectar();
-
-		$nombre = '';
-		$correo = '';
-		while ($row = mysqli_fetch_array($respuesta1)) {
-			$nombre = $row['nombre'];
-			$correo = $row['correo'];
-		}
-
-		$lista = '';
-		while ($row = mysqli_fetch_array($respuesta2)) {
-			$lista .= '<option value="'.$row['id_curso'].'" >'.$row['nombre'].' - '.$row['descripcion'].'</option>';
-		}
-
-		$plantilla = $this->reemplazar( $plantilla, '{{lista_cursos}}', $lista);
-		$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-		$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-		$this->mostrarVista($plantilla);
-		
-	}
-
-
-	public function mostrarFormRegistrarProyectos($letra){
-
-		if($letra == 'a'){
-			$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/registrar_proyecto_admin.html');
-			$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-			$consulta2 = "SELECT c.id_curso, c.nombre, c.descripcion FROM curso_docente cd, curso c WHERE cd.id_curso = c.id_curso AND cd.id_docente = ".$_SESSION['admin']." AND cd.id_docente IN (SELECT d.id_docente FROM docente d)";
-
-		}else{
-			if($letra == 'd'){
-				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/registrar_proyecto_docente.html');
-				$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['docente']."";
-				$consulta2 = "SELECT c.id_curso, c.nombre, c.descripcion FROM curso_docente cd, curso c WHERE cd.id_curso = c.id_curso AND cd.id_docente = ".$_SESSION['docente']." AND cd.id_docente IN (SELECT d.id_docente FROM docente d)";
-			}
-		}
-		
-		$this->modelo->conectar();
-		$respuesta1 = $this->modelo->consultar($consulta1);
-		$respuesta2 = $this->modelo->consultar($consulta2);
-		$this->modelo->desconectar();
-
-		$nombre = '';
-		$correo = '';
-		while ($row = mysqli_fetch_array($respuesta1)) {
-			$nombre = $row['nombre'];
-			$correo = $row['correo'];
-		}
-
-		$lista = '';
-		while ($row = mysqli_fetch_array($respuesta2)) {
-			$lista .= '<option value="'.$row['id_curso'].'" >'.$row['nombre'].' - '.$row['descripcion'].'</option>';
-		}
-
-		$plantilla = $this->reemplazar( $plantilla, '{{lista_cursos}}', $lista);
-		$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-		$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-		$this->mostrarVista($plantilla);
-		
-	}
-
-
-	public function mostrarFormMisProyectos(){
-
-		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/mis_proyectos.html');
-		$consulta1 = "SELECT nombre, correo FROM estudiante WHERE id_estudiante = ".$_SESSION['estudiante']."";
-
-		$this->modelo->conectar();
-		$respuesta1 = $this->modelo->consultar($consulta1);
-		$this->modelo->desconectar();
-
-		$nombre = '';
-		$correo = '';
-		while ($row = mysqli_fetch_array($respuesta1)) {
-			$nombre = $row['nombre'];
-			$correo = $row['correo'];
-		}
-
-		$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-		$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-		$this->mostrarVista($plantilla);
-		
-	}
-
-	public function mostrarFormListadoDocentes(){
-
-		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/listado_docentes.html');
-		$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-		$docentes = "SELECT nombre, correo, telefono, id_docente FROM docente";
-
-		$this->modelo->conectar();
-		$respuesta1 = $this->modelo->consultar($consulta1);
-		$docentes = $this->modelo->consultar($docentes);
-		$this->modelo->desconectar();
-
-		$nombre = '';
-		$correo = '';
-		while ($row = mysqli_fetch_array($respuesta1)) {
-			$nombre = $row['nombre'];
-			$correo = $row['correo'];
-		}
-
-
-		$nombre_docentes = '';
-		$correo_docentes = '';
-		$telefono_docentes = '';
-		$listado = '';
-		while ($row = mysqli_fetch_array($docentes)) {
-			$nombre_docente = $row['nombre'];
-			$correo_docente = $row['correo'];
-			$telefono_docente = $row['telefono'];
-			$id_docente = $row['id_docente'];
-			$nombre_docente_string = '"'.$nombre_docente.'"';
-			$listado .= "
-				<tr>
-					<td>
-						$nombre_docente
-					</td>
-					<td>
-						$correo_docente
-					</td>
-					<td>
-						$telefono_docente
-					</td>
-					<td class='text-center'>
-						<a href='index.php?boton=modificar_docente&id=$id_docente' class='btn btn-sm bg-blue waves-effect'>Editar</a>
-						<button type='button' class='btn btn-sm bg-red waves-effect' onclick='borrarDocente($id_docente, $nombre_docente_string);'>Eliminar</button>
-					</td>
-				</tr>
-			";
-
-		}
-
-		$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-		$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-		$plantilla = $this->reemplazar( $plantilla, '{{listado_docentes}}', $listado);
-		$this->mostrarVista($plantilla);
-		
-	}
 
 	public function guardarDocente($nombre, $telefono, $correo, $password, $admin){
 
@@ -820,9 +513,6 @@ class controladorInicio extends controlador{
 		}
 	}
 
-
-
-
 	public function modificarDocente($nombre, $telefono, $correo, $password, $id_docente){
 		 
 		$consulta2 = "UPDATE docente set nombre = '$nombre', 
@@ -845,9 +535,6 @@ class controladorInicio extends controlador{
 					</script>';
 		header('Location: index.php');
 	}
-
-
-
 
 	public function agregarAdmin($docente){
 
@@ -887,9 +574,9 @@ class controladorInicio extends controlador{
 		}
 	}
 
-	public function registrarCurso($nombre, $descripcion){
+	public function registrarCurso($codigo, $nombre){
 
-		$consulta1 = "INSERT INTO curso VALUES( null, '".$nombre."', '".$descripcion."')";
+		$consulta1 = "INSERT INTO curso VALUES( null, '".$codigo."', '".$nombre."')";
 		$this->modelo->conectar();
 		$this->modelo->consultar($consulta1);
 		$this->modelo->desconectar();
@@ -925,7 +612,6 @@ class controladorInicio extends controlador{
 		header('Location: index.php');
 	}
 
-	
 	public function registrarProyecto($letra, $curso, $nombre, $url_app, $url_codigo, $descripcion){
 
 
@@ -971,7 +657,7 @@ class controladorInicio extends controlador{
 
 			//Estudiantes por curso
 			case 'estudiantes_curso':
-				$consulta1 = "SELECT e.nombre, e.correo, e.telefono, c.nombre, c.descripcion  FROM estudiante e, proyecto p, proyecto_estudiante pe, curso c WHERE e.id_estudiante = pe.id_estudiante AND p.id_proyecto = pe.id_proyecto AND p.id_curso = c.id_curso";
+				$consulta1 = "SELECT e.nombre, e.correo, e.telefono, c.codigo, c.nombre  FROM estudiante e, proyecto p, proyecto_estudiante pe, curso c WHERE e.id_estudiante = pe.id_estudiante AND p.id_proyecto = pe.id_proyecto AND p.id_curso = c.id_curso";
 				$this->modelo->conectar();
 				$respuesta1 = $this->modelo->consultar($consulta1);
 				$this->modelo->desconectar();	
@@ -1002,8 +688,8 @@ class controladorInicio extends controlador{
 				                        <td>'.$row['nombre'].'</td>
 				                        <td>'.$row['correo'].'</td>
 				                        <td>'.$row['telefono'].'</td>
+				                        <td>'.$row['codigo'].'</td>
 				                        <td>'.$row['nombre'].'</td>
-				                        <td>'.$row['descripcion'].'</td>
 				                        <td> A </td>
 			                        </tr>';
 				}
@@ -1057,7 +743,7 @@ class controladorInicio extends controlador{
 
 			//proyectos por curso
 			case 'proyecto_curso':
-				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.nombre, c.descripcion  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
+				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.codigo, c.nombre  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
 				$this->modelo->conectar();
 				$respuesta1 = $this->modelo->consultar($consulta1);
 				$this->modelo->desconectar();
@@ -1090,8 +776,8 @@ class controladorInicio extends controlador{
 				                        <td>'.$row['nombre'].'</td>
 				                        <td>'.$row['descripcion'].'</td>
 				                        <td>'.$row['estado'].'</td>
+				                        <td>'.$row['codigo'].'</td>
 				                        <td>'.$row['nombre'].'</td>
-				                        <td>'.$row['descripcion'].'</td>
 				                        <td> A </td>
 			                        </tr>';
 				}
@@ -1142,7 +828,7 @@ class controladorInicio extends controlador{
 
 			//proyectos por semestre
 			case 'proyecto_semestre':
-				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.nombre, c.descripcion  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
+				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.codigo, c.nombre  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
 				$this->modelo->conectar();
 				$respuesta1 = $this->modelo->consultar($consulta1);
 				$this->modelo->desconectar();
@@ -1175,8 +861,8 @@ class controladorInicio extends controlador{
 				                        <td>'.$row['nombre'].'</td>
 				                        <td>'.$row['descripcion'].'</td>
 				                        <td>'.$row['estado'].'</td>
+				                        <td>'.$row['codigo'].'</td>
 				                        <td>'.$row['nombre'].'</td>
-				                        <td>'.$row['descripcion'].'</td>
 				                        <td> 2017 </td>
 			                        </tr>';
 				}
@@ -1228,7 +914,7 @@ class controladorInicio extends controlador{
 			//proyectos sin terminar
 			case 'proyectos_sin_terminar':
 
-				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.nombre, c.descripcion  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
+				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.codigo, c.nombre  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
 				$this->modelo->conectar();
 				$respuesta1 = $this->modelo->consultar($consulta1);
 				$this->modelo->desconectar();
@@ -1261,8 +947,8 @@ class controladorInicio extends controlador{
 				                        <td>'.$row['nombre'].'</td>
 				                        <td>'.$row['descripcion'].'</td>
 				                        <td>'.$row['estado'].'</td>
+				                        <td>'.$row['codigo'].'</td>
 				                        <td>'.$row['nombre'].'</td>
-				                        <td>'.$row['descripcion'].'</td>
 				                        <td> A </td>
 			                        </tr>';
 				}
@@ -1315,7 +1001,7 @@ class controladorInicio extends controlador{
 
 			case 'proyectos_todos':
 
-				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.nombre, c.descripcion  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
+				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.codigo, c.nombre  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
 				$this->modelo->conectar();
 				$respuesta1 = $this->modelo->consultar($consulta1);
 				$this->modelo->desconectar();
@@ -1348,8 +1034,8 @@ class controladorInicio extends controlador{
 				                        <td>'.$row['nombre'].'</td>
 				                        <td>'.$row['descripcion'].'</td>
 				                        <td>'.$row['estado'].'</td>
+				                        <td>'.$row['codigo'].'</td>
 				                        <td>'.$row['nombre'].'</td>
-				                        <td>'.$row['descripcion'].'</td>
 				                        <td> A </td>
 			                        </tr>';
 				}
@@ -1399,7 +1085,7 @@ class controladorInicio extends controlador{
 				break;
 
 			case 'curso_semestre':
-				$consulta1 = "SELECT c.nombre, c.descripcion  FROM curso c";
+				$consulta1 = "SELECT c.codigo, c.nombre  FROM curso c";
 				$this->modelo->conectar();
 				$respuesta1 = $this->modelo->consultar($consulta1);
 				$this->modelo->desconectar();
@@ -1429,8 +1115,8 @@ class controladorInicio extends controlador{
 					$lista .= '
                                 
 									<tr>
+				                        <td>'.$row['codigo'].'</td>
 				                        <td>'.$row['nombre'].'</td>
-				                        <td>'.$row['descripcion'].'</td>
 				                        <td> 2017 </td>
 				                        <td> I </td>
 				                        <td> A </td>
@@ -1574,28 +1260,28 @@ class controladorInicio extends controlador{
 	public function invitarDocente($email){
 
 		
-/*
-		//funcion mail simple 
-		$mail = "Lo invitamos a formar parte de Project Manager";
-		//Titulo
-		$titulo = "Project Manager UFPS";
-		//cabecera
-		$headers = "MIME-Version: 1.0\r\n"; 
-		$headers .= "Content-type: text/html; charset=iso-8859-1\r\n"; 
-		//dirección del remitente 
-		$headers .= "From: ProjectManagerTeam <".$email.">\r\n";
-		//Enviamos el mensaje a tu_dirección_email 
-		$bool = mail($email,$titulo,$mail,$headers);
-		if($bool){
-		    echo'<script type="text/javascript">
-            alert("Enviado Correctamente");
-         	</script>'; 
-		}else{
-		    echo'<script type="text/javascript">
-            alert("NO ENVIADO, intentar de nuevo");
-         	</script>';
-		}
-*/		
+		/*
+				//funcion mail simple 
+				$mail = "Lo invitamos a formar parte de Project Manager";
+				//Titulo
+				$titulo = "Project Manager UFPS";
+				//cabecera
+				$headers = "MIME-Version: 1.0\r\n"; 
+				$headers .= "Content-type: text/html; charset=iso-8859-1\r\n"; 
+				//dirección del remitente 
+				$headers .= "From: ProjectManagerTeam <".$email.">\r\n";
+				//Enviamos el mensaje a tu_dirección_email 
+				$bool = mail($email,$titulo,$mail,$headers);
+				if($bool){
+					echo'<script type="text/javascript">
+					alert("Enviado Correctamente");
+					</script>'; 
+				}else{
+					echo'<script type="text/javascript">
+					alert("NO ENVIADO, intentar de nuevo");
+					</script>';
+				}
+		*/		
 
 		
 		//funcion para enviar correo con la libreria PHPMailer
@@ -1693,4 +1379,164 @@ class controladorInicio extends controlador{
 		</script>';
 		header('Location: index.php');
 	}
-} 
+ 
+
+
+
+	/*************************************************************************************************
+	 ***********************    METODOS PRIVADOS   **************************************************
+	 *************************************************************************************************
+	*/
+
+	/**
+	* Monto en la plantilla los datos de nombre y correo que siempre se muestran
+	* @return la plantilla modificada
+	*/
+	
+	private function montarDatos($plantilla, $tipoUser, $id){
+
+		if(($tipoUser == 'admin') || ($tipoUser == 'docente')){
+			$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$id."";
+		}else{
+			if($tipoUser == 'estudiante'){
+				$consulta1 = "SELECT nombre, correo FROM estudiante WHERE id_estudiante = ".$id."";
+			}
+		}
+		
+		$this->modelo->conectar();
+		$respuesta1 = $this->modelo->consultar($consulta1);
+		$this->modelo->desconectar();
+
+		$nombre = '';
+		$correo = '';
+		while ($row = mysqli_fetch_array($respuesta1)) {
+			$nombre = $row['nombre'];
+			$correo = $row['correo'];
+		}
+
+		$nuevaPlantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
+		$nuevaPlantilla = $this->reemplazar( $nuevaPlantilla, '{{correo}}', $correo);
+
+		return $nuevaPlantilla;
+	}
+
+
+	/**
+	* Monto en la plantilla los datos calculados de las tarjetas
+	* @return la plantilla modificada
+	*/
+	private function calcularTarjetas($plantilla){
+
+		$consulta2 = "SELECT COUNT(correo) FROM docente";
+		$consulta3 = "SELECT COUNT(*) FROM curso";
+		$consulta4 = "SELECT COUNT(*) FROM proyecto";
+		$consulta5 = "SELECT COUNT(*) FROM estudiante";
+
+		$this->modelo->conectar();
+		$respuesta2 = $this->modelo->consultar($consulta2);		
+		$respuesta3 = $this->modelo->consultar($consulta3);
+		$respuesta4 = $this->modelo->consultar($consulta4);
+		$respuesta5 = $this->modelo->consultar($consulta5);
+		$this->modelo->desconectar();
+
+		
+		$docentes='';
+		if(!$respuesta2 || mysqli_num_rows($respuesta2) == 0){
+
+			$docentes = '<div class="icon">
+                            <i class="material-icons">group</i>
+                        </div>
+                        <div class="content">
+                            <div class="text">DOCENTES</div>
+                            <div class="number count-to" data-from="0" data-to="0" data-speed="15" data-fresh-interval="20"></div>
+                        </div>';
+		}else{
+			
+			while($row = mysqli_fetch_array($respuesta2)){
+			$docentes = '<div class="icon">
+                            <i class="material-icons">group</i>
+                        </div>
+                        <div class="content">
+                            <div class="text">DOCENTES</div>
+                            <div class="number count-to" data-from="0" data-to="'.$row['COUNT(correo)'].'" data-speed="15" data-fresh-interval="20"></div>
+                        </div>';
+			}
+		}
+		
+
+		$cursos='';
+		if(!$respuesta3 || mysqli_num_rows($respuesta3) == 0){
+
+			$cursos = ' <div class="icon">
+	                            <i class="material-icons">book</i>
+	                        </div>
+	                        <div class="content">
+	                            <div class="text">CURSOS</div>
+	                            <div class="number count-to" data-from="0" data-to="0" data-speed="1000" data-fresh-interval="20"></div>
+	                        </div>';
+		}else{
+			while($row = mysqli_fetch_array($respuesta3)){
+				$cursos = ' <div class="icon">
+	                            <i class="material-icons">book</i>
+	                        </div>
+	                        <div class="content">
+	                            <div class="text">CURSOS</div>
+	                            <div class="number count-to" data-from="0" data-to="'.$row['COUNT(*)'].'" data-speed="1000" data-fresh-interval="20"></div>
+	                        </div>';
+	        }
+		}
+
+		$proyectos='';
+		if(!$respuesta4 || mysqli_num_rows($respuesta4) == 0){
+
+			$proyectos= ' <div class="icon">
+	                            <i class="material-icons">folder</i>
+	                        </div>
+	                        <div class="content">
+	                            <div class="text">PROYECTOS</div>
+	                            <div class="number count-to" data-from="0" data-to="0" data-speed="1000" data-fresh-interval="20"></div>
+	                        </div>';
+		}else{
+			while($row = mysqli_fetch_array($respuesta4)){
+				$proyectos = ' <div class="icon">
+	                            <i class="material-icons">folder</i>
+	                        </div>
+	                        <div class="content">
+	                            <div class="text">PROYECTOS</div>
+	                            <div class="number count-to" data-from="0" data-to="'.$row['COUNT(*)'].'" data-speed="1000" data-fresh-interval="20"></div>
+	                        </div>';
+			}
+		}
+
+
+		$alumnos='';
+		if(!$respuesta5 || mysqli_num_rows($respuesta5) == 0){
+
+			$alumnos =  '  <div class="icon">
+	                            <i class="material-icons">person_add</i>
+	                        </div>
+	                        <div class="content">
+	                            <div class="text">ALUMNOS</div>
+	                            <div class="number count-to" data-from="0" data-to="0" data-speed="1000" data-fresh-interval="20"></div>
+	                        </div>';
+		}else{
+			while($row = mysqli_fetch_array($respuesta5)){
+				$alumnos = '  <div class="icon">
+	                            <i class="material-icons">person_add</i>
+	                        </div>
+	                        <div class="content">
+	                            <div class="text">ALUMNOS</div>
+	                            <div class="number count-to" data-from="0" data-to="'.$row['COUNT(*)'].'" data-speed="1000" data-fresh-interval="20"></div>
+	                        </div>';
+			}
+		}
+
+		
+		$nuevaPlantilla = $this->reemplazar( $plantilla, '{{docentes}}', $docentes);
+		$nuevaPlantilla = $this->reemplazar( $nuevaPlantilla, '{{cursos}}', $cursos);
+		$nuevaPlantilla = $this->reemplazar( $nuevaPlantilla, '{{proyectos}}', $proyectos);
+		$nuevaPlantilla = $this->reemplazar( $nuevaPlantilla, '{{alumnos}}', $alumnos);
+
+		return $nuevaPlantilla;
+	}
+}
