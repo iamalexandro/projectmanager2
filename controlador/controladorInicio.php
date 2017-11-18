@@ -224,7 +224,7 @@ class controladorInicio extends controlador{
 		
 		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/listado_cursos.html');
 		
-		$cursos = "SELECT nombre, descripcion, id_curso FROM curso";
+		$cursos = "SELECT codigo, nombre, id_curso FROM curso";
 		$id = $_SESSION['admin'];
 		$is_admin = "SELECT COUNT(*) as exist FROM administrador WHERE id_docente = $id";
 		
@@ -238,23 +238,23 @@ class controladorInicio extends controlador{
 			$is_admin_aux = $row['exist'];
 		}
 
+		$codigo_curso = '';
 		$nombre_curso = '';
-		$descripcion_curso = '';
 		$listado = '';
 		$class = !$is_admin_aux ? 'hidden' : '';
 		$disabled = $is_admin_aux ? '' : 'disabled';
 		while ($row = mysqli_fetch_array($cursos)) {
+			$codigo_curso = $row['codigo'];
 			$nombre_curso = $row['nombre'];
-			$descripcion_curso = $row['descripcion'];
 			$id_curso = $row['id_curso'];
 			//$nombre_docente_string = '"'.$nombre_docente.'"';
 			$listado .= "
 				<tr>
 					<td>
-						$nombre_curso
+						$codigo_curso
 					</td>
 					<td>
-						$descripcion_curso
+						$nombre_curso
 					</td>
 					<td class='text-center'>
 						<a href='index.php?boton=modificar_curso&id=$id_curso' class='btn btn-sm bg-blue waves-effect'>Editar</a>
@@ -308,7 +308,7 @@ class controladorInicio extends controlador{
 		$plantilla = $this->reemplazar( $plantilla, '{{id}}', $id);
 		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
 		
-		$this->mostrarVista($plantillaConDatos)
+		$this->mostrarVista($plantillaConDatos);
 	}
 
 	/**

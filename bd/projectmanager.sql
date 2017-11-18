@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 14-11-2017 a las 03:15:02
+-- Tiempo de generación: 18-11-2017 a las 04:31:36
 -- Versión del servidor: 10.1.26-MariaDB
 -- Versión de PHP: 7.1.9
 
@@ -52,15 +52,15 @@ INSERT INTO `administrador` (`id_docente`, `estado`, `fecha_inicio`, `fecha_fin`
 
 CREATE TABLE `curso` (
   `id_curso` int(10) NOT NULL,
-  `nombre` varchar(100) DEFAULT NULL,
-  `descripcion` varchar(200) DEFAULT NULL
+  `codigo` varchar(100) DEFAULT NULL,
+  `nombre` varchar(200) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Tabla que guarda los datos de los cursos';
 
 --
 -- Volcado de datos para la tabla `curso`
 --
 
-INSERT INTO `curso` (`id_curso`, `nombre`, `descripcion`) VALUES
+INSERT INTO `curso` (`id_curso`, `codigo`, `nombre`) VALUES
 (1, '1150605', 'Analisis y diseno de sistemas'),
 (2, '1150606', 'Seminario de investigacion II'),
 (3, '11500704', 'Teoria General de las Comunicaciones'),
@@ -93,6 +93,21 @@ CREATE TABLE `curso_docente` (
 INSERT INTO `curso_docente` (`id_curso_docente`, `id_curso`, `id_docente`, `grupo`, `anio`, `periodo`) VALUES
 (1, 1, 1, 'A', 2017, 1),
 (2, 3, 4, 'A', 2017, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `curso_estudiante`
+--
+
+CREATE TABLE `curso_estudiante` (
+  `id_curso_estudiante` int(10) NOT NULL,
+  `id_curso` int(10) NOT NULL,
+  `id_estudiante` int(10) NOT NULL,
+  `grupo` varchar(1) NOT NULL,
+  `anio` int(4) NOT NULL,
+  `periodo` int(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -217,6 +232,12 @@ ALTER TABLE `curso_docente`
   ADD KEY `curso_docente_curso_fk` (`id_curso`);
 
 --
+-- Indices de la tabla `curso_estudiante`
+--
+ALTER TABLE `curso_estudiante`
+  ADD PRIMARY KEY (`id_curso_estudiante`);
+
+--
 -- Indices de la tabla `docente`
 --
 ALTER TABLE `docente`
@@ -261,6 +282,12 @@ ALTER TABLE `curso`
 --
 ALTER TABLE `curso_docente`
   MODIFY `id_curso_docente` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de la tabla `curso_estudiante`
+--
+ALTER TABLE `curso_estudiante`
+  MODIFY `id_curso_estudiante` int(10) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `docente`
