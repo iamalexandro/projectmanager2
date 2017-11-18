@@ -218,6 +218,59 @@ class controladorInicio extends controlador{
 	}
 
 	/**
+	 * Muestra la vista de listado de cursos
+	*/
+	public function mostrarFormListadoCursos(){
+		
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/listado_cursos.html');
+		
+		$cursos = "SELECT nombre, descripcion, id_curso FROM curso";
+		$id = $_SESSION['admin'];
+		$is_admin = "SELECT COUNT(*) as exist FROM administrador WHERE id_docente = $id";
+		
+		$this->modelo->conectar();
+		$cursos = $this->modelo->consultar($cursos);
+		$is_admin = $this->modelo->consultar($is_admin);
+		$this->modelo->desconectar();
+		
+		$is_admin_aux = '';
+		while ($row = mysqli_fetch_array($is_admin)) {
+			$is_admin_aux = $row['exist'];
+		}
+
+		$nombre_curso = '';
+		$descripcion_curso = '';
+		$listado = '';
+		$class = !$is_admin_aux ? 'hidden' : '';
+		$disabled = $is_admin_aux ? '' : 'disabled';
+		while ($row = mysqli_fetch_array($cursos)) {
+			$nombre_curso = $row['nombre'];
+			$descripcion_curso = $row['descripcion'];
+			$id_curso = $row['id_curso'];
+			//$nombre_docente_string = '"'.$nombre_docente.'"';
+			$listado .= "
+				<tr>
+					<td>
+						$nombre_curso
+					</td>
+					<td>
+						$descripcion_curso
+					</td>
+					<td class='text-center'>
+						<a href='index.php?boton=modificar_curso&id=$id_curso' class='btn btn-sm bg-blue waves-effect'>Editar</a>
+						<button type='button' class='btn btn-sm bg-red waves-effect $class' $disabled>Eliminar</button>
+					</td>
+				</tr>";
+		}
+
+		$plantilla = $this->reemplazar( $plantilla, '{{listado_cursos}}', $listado);
+		$plantilla = $this->reemplazar( $plantilla, '{{id}}', $id);
+		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
+		
+		$this->mostrarVista($plantillaConDatos);
+	}
+
+	/**
 	 * Muestra la vista de registrar un nuevo curso
 	*/
 	public function mostrarFormRegistrarCurso(){
@@ -229,24 +282,20 @@ class controladorInicio extends controlador{
 		$this->mostrarVista($plantillaConDatos);
 	}
 
+	/**
+	 * Muestra la vista de modificar un nuevo curso
+	*/
 	public function mostrarFormModificarCurso(){
 		
 		$id = $_GET['id'];
 		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/modificar_curso.html');
-		$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
+		
 		$consulta2 = "SELECT nombre, descripcion FROM curso WHERE id_curso = $id";
 
 		$this->modelo->conectar();
-		$respuesta1 = $this->modelo->consultar($consulta1);
 		$respuesta2 = $this->modelo->consultar($consulta2);
 		$this->modelo->desconectar();
 
-		$nombre = '';
-		$correo = '';
-		while ($row = mysqli_fetch_array($respuesta1)) {
-			$nombre = $row['nombre'];
-			$correo = $row['correo'];
-		}
 		$nombre_curso = '';
 		$descripcion_curso = '';
 		while ($row = mysqli_fetch_array($respuesta2)) {
@@ -254,78 +303,17 @@ class controladorInicio extends controlador{
 			$descripcion_curso = $row['descripcion'];
 		}
 
-		$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-		$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
 		$plantilla = $this->reemplazar( $plantilla, '{{nombre_curso}}', $nombre_curso);
 		$plantilla = $this->reemplazar( $plantilla, '{{descripcion_curso}}', $descripcion_curso);
 		$plantilla = $this->reemplazar( $plantilla, '{{id}}', $id);
-		$this->mostrarVista($plantilla);
+		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
 		
+		$this->mostrarVista($plantillaConDatos)
 	}
 
-
-	public function mostrarFormListadoCursos(){
-		
-				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/listado_cursos.html');
-				$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-				$cursos = "SELECT nombre, descripcion, id_curso FROM curso";
-				$id = $_SESSION['admin'];
-				$is_admin = "SELECT COUNT(*) as exist FROM administrador WHERE id_docente = $id";
-				
-				$this->modelo->conectar();
-				$respuesta1 = $this->modelo->consultar($consulta1);
-				$cursos = $this->modelo->consultar($cursos);
-				$is_admin = $this->modelo->consultar($is_admin);
-				$this->modelo->desconectar();
-				
-				$is_admin_aux = '';
-				while ($row = mysqli_fetch_array($is_admin)) {
-					$is_admin_aux = $row['exist'];
-				}
-				$nombre = '';
-				$correo = '';
-				while ($row = mysqli_fetch_array($respuesta1)) {
-					$nombre = $row['nombre'];
-					$correo = $row['correo'];
-				}
-		
-		
-				$nombre_curso = '';
-				$descripcion_curso = '';
-				$listado = '';
-				$class = !$is_admin_aux ? 'hidden' : '';
-				$disabled = $is_admin_aux ? '' : 'disabled';
-				while ($row = mysqli_fetch_array($cursos)) {
-					$nombre_curso = $row['nombre'];
-					$descripcion_curso = $row['descripcion'];
-					$id_curso = $row['id_curso'];
-					//$nombre_docente_string = '"'.$nombre_docente.'"';
-					$listado .= "
-						<tr>
-							<td>
-								$nombre_curso
-							</td>
-							<td>
-								$descripcion_curso
-							</td>
-							<td class='text-center'>
-								<a href='index.php?boton=modificar_curso&id=$id_curso' class='btn btn-sm bg-blue waves-effect'>Editar</a>
-								<button type='button' class='btn btn-sm bg-red waves-effect $class' $disabled>Eliminar</button>
-							</td>
-						</tr>
-					";
-		
-				}
-		
-				$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-				$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-				$plantilla = $this->reemplazar( $plantilla, '{{listado_cursos}}', $listado);
-				$plantilla = $this->reemplazar( $plantilla, '{{id}}', $id);
-				$this->mostrarVista($plantilla);
-				
-			}
-
-
+	/**
+	 * Muestra la vista de generar reportes
+	*/
 	public function mostrarFormGenerarReportes(){
 		
 		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
@@ -645,9 +633,6 @@ class controladorInicio extends controlador{
 					</script>';
 		header('Location: index.php');
 	}
-
-
-
 
 	public function agregarAdmin($docente){
 
@@ -1472,11 +1457,6 @@ class controladorInicio extends controlador{
 			header('Location: index.php');
 		}
 	}
-
-
-
-
-
 
 
 	//Eliminar Docente
