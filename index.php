@@ -209,7 +209,8 @@
 		}
 
 		if($tipo == "registrar_curso"){
-			$controladorInicio->registrarCurso($_POST['nombre'], $_POST['descripcion']);
+			$controladorInicio->registrarCurso($_POST['codigo'], $_POST['nombre
+			']);
 		}
 
 		if($tipo == "inscribir_curso_a"){
@@ -274,5 +275,6 @@
 
 	if(isset($_DELETE['docente'])) {
 		$id_docente = $_DELETE['id'];
-		$controladorInicio->eliminarDocente($id_docente);
+		echo "si borra";
+		//$controladorInicio->eliminarDocente($id_docente);
 	}
