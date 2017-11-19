@@ -48,12 +48,20 @@
 					$controladorInicio->mostrarFormModificarDocente();
 					break;
 			
-					case 'modificar_curso':
+				case 'modificar_curso':
 					$controladorInicio->mostrarFormModificarCurso();
+					break;
+			
+				case 'modificar_proyecto':
+					$controladorInicio->mostrarFormModificarProyecto();
 					break;
 
 				case 'listado_docentes':
 					$controladorInicio->mostrarFormListadoDocentes();
+					break;
+				
+					case 'listado_proyectos':
+					$controladorInicio->mostrarFormListadoProyectos();
 					break;
 
 				case 'invitar_docente':
@@ -221,6 +229,10 @@
 			$controladorInicio->registrarProyecto('a', $_POST['curso'], $_POST['nombre'], $_POST['url_app'], $_POST['url_codigo'], $_POST['descripcion'] );	
 		}
 
+		if($tipo == "modificar_proyecto_a"){
+			$controladorInicio->modificarProyecto($_POST['curso'], $_POST['nombre'], $_POST['url_app'], $_POST['url_codigo'], $_POST['descripcion'], $_POST['id_proyecto'] );	
+		}
+
 		if($tipo == "generar_reportes"){
 			$controladorInicio->generarReportes($_POST['reporte'] );	
 		}
@@ -271,10 +283,25 @@
 	 *************************************************************************************************
 	*/
 
-	//eliminar usuarios desde las vistas de listados (docentes, estudiantes, etc)
+	//eliminar docente
+	if(isset($_POST['docente'])) {
+		$id_docente = $_POST['id'];
+		echo json_encode(array('response' => $controladorInicio->eliminarDocente($id_docente)));
+		exit();
+	}
 
-	if(isset($_DELETE['docente'])) {
-		$id_docente = $_DELETE['id'];
-		echo "si borra";
-		//$controladorInicio->eliminarDocente($id_docente);
+
+	//eliminar curso
+	if(isset($_POST['curso'])) {
+		$id_curso = $_POST['id'];
+		echo json_encode(array('response' => $controladorInicio->eliminarCurso($id_curso)));
+		exit();
+	}
+
+
+	//eliminar proyecto
+	if(isset($_POST['proyecto'])) {
+		$id_proyecto = $_POST['id'];
+		echo json_encode(array('response' => $controladorInicio->eliminarProyecto($id_proyecto)));
+		exit();
 	}

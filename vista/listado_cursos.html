@@ -131,9 +131,9 @@
                         </a>
                     </li>
                     <li>
-                        <a href="index.php?boton=registrar_proyectos">
+                        <a href="index.php?boton=listado_proyectos">
                             <i class="material-icons">folder_shared</i>
-                            <span>Registrar Proyecto</span>
+                            <span>Mis Proyectos</span>
                         </a>
                     </li>
                     <li>
@@ -227,17 +227,16 @@
     <script src="recursos/js/demo.js"></script>
 
     <script>
-            function borrarDocente( id_docente, nombre ) {
-                if( confirm( 'desea eliminar el docente '+ nombre+' ?' ) ) {
+            function borrarCurso( id_curso, nombre ) {
+                if( confirm( '¿Desea eliminar el curso '+ nombre+'?' ) ) {
                     $.ajax({
-                        type: "DELETE",
+                        type: "POST",
                         url: "index.php",
-                        data: {id: id_docente},
-                        dataType: "dataType",
-                        success: function (response) {
-                            window.location.href='index.php';
-                        }
+                        data: {curso: true, id: id_curso},
+                        dataType: "json",
+                        async: false
                     });
+                    window.location.href='index.php?boton=listado_cursos';
                 }
             }
         </script>

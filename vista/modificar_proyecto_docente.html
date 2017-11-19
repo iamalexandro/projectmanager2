@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 
 <head>
@@ -65,12 +65,12 @@
             <div class="navbar-header">
                 <a href="javascript:void(0);" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false"></a>
                 <a href="javascript:void(0);" class="bars"></a>
-                <a class="navbar-brand" href="index.php">ADMINISTRADOR</a>
+                <a class="navbar-brand" href="index.php">DOCENTE</a>
             </div>
             <div class="collapse navbar-collapse" id="navbar-collapse">
                 <ul class="nav navbar-nav navbar-right">
                     <!-- Call Search -->
-                    <li><a href="index.php?boton=logouta" class="js-search" data-close="true"><i class="material-icons">power_settings_new</i></a></li>
+                    <li><a href="index.php?boton=logoutd" class="js-search" data-close="true"><i class="material-icons">power_settings_new</i></a></li>
                 </ul>
             </div>
         </div>
@@ -92,37 +92,6 @@
             <!-- Menu -->
             <div class="menu">
                 <ul class="list">
-                    <li class="header">PANEL ADMINISTRADOR</li>
-                    <li class="active">
-                        <a href="index.php?boton=listado_docentes">
-                            <i class="material-icons">person_add</i>
-                            <span>Docentes</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="index.php?boton=invitar_docente">
-                            <i class="material-icons">contact_mail</i>
-                            <span>Invitar Docente</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="index.php?boton=agregar_admin">
-                            <i class="material-icons">group_add</i>
-                            <span>Agregar Administrador</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="index.php?boton=listado_cursos">
-                            <i class="material-icons">library_add</i>
-                            <span>Cursos</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="index.php?boton=generar_reportes">
-                            <i class="material-icons">description</i>
-                            <span>Generar Reportes</span>
-                        </a>
-                    </li>
                     <li class="header">PANEL DOCENTE</li>
                     <li class="active">
                         <a href="index.php?boton=inscribir_curso">
@@ -134,12 +103,6 @@
                         <a href="index.php?boton=listado_proyectos">
                             <i class="material-icons">folder_shared</i>
                             <span>Mis Proyectos</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="index.php?boton=agregar_alumnos">
-                            <i class="material-icons">layers</i>
-                            <span>Agregar Alumnos</span>
                         </a>
                     </li>
                 </ul>
@@ -161,38 +124,95 @@
     </section>
     <section class="content">
         <div class="container-fluid">
-            <div class="row">
-                <div class="block-header">
-                    <h2>GENERAR LISTADO DE DOCENTES</h2>
-                </div>
+            <div class="block-header">
+                <h2>MODIFICAR PROYECTO</h2>
             </div>
-            <div class="row">
-                <div class="col-lg-4">
-                        <a href="index.php?boton=registrar_docente" class="btn btn-sm bg-green waves-effect'">Agregar Docente</a>
-                </div>
-                <br>
-            </div>
+            <!-- Input -->
+            <!-- Select -->
             <div class="row clearfix">
-                <div class="col-lg-12">
+                <div class="col-xs-12">
                     <div class="card">
                         <div class="body">
-                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">             
-                               <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Correo</th>
-                                    <th>telefono</th>
-                                    <th class='text-center'>Acciones</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                    {{listado_docentes}}
-                                </tbody>
-                            </table>
+                            <div class="row clearfix">
+                                <div class="col-xs-12">
+                                    <Form method="POST" action="index.php" id="agregarAdmin">
+
+                                        <input type="hidden" name="solicitudes" value="modificar_proyecto_d">
+                                        <input type="hidden" name="id_proyecto" value="{{id_proyecto}}">
+                                        <div class="row clearfix">
+                                            <div class="col-xs-12">
+                                                <select class="form-control show-tick">
+                                                    <option value="" disabled selected style="display:none;">Seleccione Curso</option>
+                                                    {{lista_cursos}}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="input-group">
+                                            <span class="input-group-addon">
+                                                <i class="material-icons">school</i>
+                                            </span>
+                                            <div class="form-line">
+                                                <input value="{{nombre_proyecto}}" type="text" class="form-control" name="nombre" placeholder="Nombre" required autofocus>
+                                            </div>
+                                        </div>
+                                        <div class="input-group">
+                                            <span class="input-group-addon">
+                                                <i class="material-icons">link</i>
+                                            </span>
+                                            <div class="form-line">
+                                                <input value="{{url_app_proyecto}}" type="text" class="form-control" name="url_app" placeholder="URL Aplicacion" required>
+                                            </div>
+                                        </div>
+                                        <div class="input-group">
+                                            <span class="input-group-addon">
+                                                <i class="material-icons">link</i>
+                                            </span>
+                                            <div class="form-line">
+                                                <input value="{{url_code_proyecto}}" type="text" class="form-control" name="url_codigo" placeholder="Repositorio de codigo" required>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <input value="{{fecha_fin_proyecto}}" type="text" class="datepicker form-control" placeholder="Fecha de finalizacion del proyecto.">
+                                            </div>
+                                        </div>
+                                        <div class="input-group">
+                                            <div class="form-line">
+                                                <textarea value="{{descripcion_proyecto}}" rows="4" class="form-control no-resize" placeholder="Descripcion...">{{descripcion_proyecto}}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="row clearfix">
+                                            <div class="col-xs-12">
+                                                <select class="form-control show-tick" selected="{{estado}}">
+                                                    <option value="" disabled style="display:none;">Estado</option>
+                                                    <option value="desarrollo">En desarrollo</option>
+                                                    <option value="finalizado">Finalizado</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="input-group">
+                                            <span class="input-group-addon">
+                                                <i class="material-icons">file_upload</i>
+                                            </span>
+                                            <div class="form-line">
+                                                <input type="file" class="form-control" name="file_upload" placeholder="Archivo">
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-xs-12 col-md-4 col-md-offset-8">
+                                                <button class="btn btn-block btn-lg bg-blue waves-effect" type="submit">MODIFICAR</button>
+                                            </div>
+                                        </div>
+                                    </Form>
+                                </div>
+
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <!-- #END# Select -->
         </div>
     </section>
 
@@ -226,21 +246,6 @@
 
     <!-- Demo Js -->
     <script src="recursos/js/demo.js"></script>
-
-    <script>
-            function borrarDocente( id_docente, nombre ) {
-                if( confirm( '¿Desea eliminar el docente '+ nombre+'?' ) ) {
-                    $.ajax({
-                        type: "POST",
-                        url: "index.php",
-                        data: {docente: true, id: id_docente},
-                        dataType: "json",
-                        async: false
-                    });
-                    window.location.href='index.php?boton=listado_docentes';
-                }
-            }
-        </script>
 </body>
 
 </html>

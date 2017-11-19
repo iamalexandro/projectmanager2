@@ -128,6 +128,87 @@ class controladorInicio extends controlador{
 		$this->mostrarVista($plantillaConDatos);
 		
 	}
+	
+	
+	
+	/**
+	 * Muestro la vista de listado de proyectos
+	*/ 
+	public function mostrarFormListadoProyectos(){
+		
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/listado_proyectos.html');
+		$proyectos = false;
+		if( isset($_SESSION['admin']) || isset($_SESSION['docente']) ) {
+			$id = isset($_SESSION['admin']) ? $_SESSION['admin'] : $_SESSION['docente'];
+			$proyectos = "SELECT * FROM proyecto WHERE id_docente = $id";
+		}
+		else if( isset($_SESSION['estudiante']) ) {
+			$id = $_SESSION['estudiante'];
+			$proyectos = "SELECT * FROM proyecto WHERE id_estudiante = $id";
+		}
+
+		if( !$proyectos ) {
+			//exit();
+		}
+
+		
+
+		$this->modelo->conectar();
+		$proyectos = $this->modelo->consultar($proyectos);
+		$this->modelo->desconectar();
+
+		$nombre_proy = '';
+		$descripcion_proy = '';
+		$url_proy = '';
+		$fecha_ini_proy = '';
+		$fecha_fin_proy = '';
+		$estado_proy = '';
+		$id_proy = '';
+		$listado = '';
+		while ($row = mysqli_fetch_array($proyectos)) {
+
+			
+			$nombre_proy = $row['nombre'];
+			$descripcion_proy = $row['descripcion'];
+			$url_proy = $row['url_app'];
+			$fecha_ini_proy = $row['fecha_inicio'];
+			$fecha_fin_proy = $row['fecha_fin'] ? $row['fecha_fin'] : '-----';
+			$estado_proy = $row['estado'];
+			$id_proy = $row['id_proyecto'];
+			$listado .= "
+				<tr>
+					<td>
+							$nombre_proy
+					</td>
+					<!--<td>
+							$descripcion_proy
+					</td>-->
+					<td>
+							$url_proy
+					</td>
+					<td class='text-center'>
+							$fecha_ini_proy
+					</td>
+					<td class='text-center'>
+							$fecha_fin_proy
+					</td>
+					<td>
+							$estado_proy
+					</td>
+					<td class='text-center'>
+						<a href='index.php?boton=modificar_proyecto&id=$id_proy' class='btn btn-sm bg-blue waves-effect'>Editar</a>
+						<button type='button' class='btn btn-sm bg-red waves-effect' onclick='borrarProyecto($id_proy);'>Eliminar</button>
+					</td>
+				</tr>
+			";
+
+		}
+		
+		$plantilla = $this->reemplazar( $plantilla, '{{listado_proyectos}}', $listado);
+		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
+		$this->mostrarVista($plantillaConDatos);
+		
+	}
 
 	/**
 	 * Muestra la vista de registrar docente
@@ -174,6 +255,89 @@ class controladorInicio extends controlador{
 		$plantilla = $this->reemplazar( $plantilla, '{{telefono}}', $telefono);
 		$plantilla = $this->reemplazar( $plantilla, '{{contraseña}}', $contraseña);
 		$plantilla = $this->reemplazar( $plantilla, '{{id}}', $id);
+
+		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
+
+		$this->mostrarVista($plantillaConDatos);
+	}
+
+
+
+	/**
+	 * Muestra la vista de modificar proyecto
+	*/
+	public function mostrarFormModificarProyecto(){
+
+		if( isset( $_SESSION['admin'] ) ) {
+			$path = 'modificar_proyecto_admin';
+			$user_login = $_SESSION['admin'];
+		}
+		else if( isset( $_SESSION['docente'] ) ) {
+			$path = 'modificar_proyecto_docente';
+			$user_login = $_SESSION['docente'];
+		}
+		
+		$plantilla = $this->leerPlantilla(__DIR__ . "/../vista/$path.html");
+		$id = $_GET['id'];
+				
+		$consulta2 = "SELECT p.*, c.nombre as nombre_curso FROM proyecto p INNER JOIN curso c ON p.id_curso = c.id_curso WHERE id_proyecto = $id";
+		
+		$this->modelo->conectar();
+		$respuesta2 = $this->modelo->consultar($consulta2);
+		$this->modelo->desconectar();
+		
+		$nombre = '';
+		$descripcion = '';
+		$url_app = '';
+		$url_code = '';
+		$fecha_ini = '';
+		$fecha_fin = '';
+		$estado = '';
+		$id = '';
+		
+		while ($row = mysqli_fetch_array($respuesta2)) {
+			$nombre = $row['nombre'];
+			$descripcion = $row['descripcion'];
+			$url_app = $row['url_app'];
+			$url_code = $row['url_code'];
+			$fecha_ini = $row['fecha_inicio'];
+			$fecha_fin = $row['fecha_fin'];
+			$estado = $row['estado'];
+			$id = $row['id_proyecto'];
+			$id_curso = $row['id_curso'];
+			$nombre_curso = $row['nombre_curso'];
+		}
+
+
+		$consulta2 = "SELECT c.id_curso, c.codigo, c.nombre 
+									FROM curso_docente cd, curso c 
+									WHERE cd.id_curso = c.id_curso 
+												AND cd.id_docente = $user_login
+												AND cd.id_docente IN (SELECT d.id_docente FROM docente d)";
+
+		$this->modelo->conectar();
+		$listado = $this->modelo->consultar($consulta2);
+		$this->modelo->desconectar();
+
+		$lista = '';
+		while ($row = mysqli_fetch_array($listado)) {
+			$selected = '';
+			if( $id_curso == $row['id_curso'] ) {
+				$selected = "selected='selected'";
+			}
+			$lista .= '<option '.$selected.' value="'.$row['id_curso'].'" >'.$row['codigo'].' - '.$row['nombre'].'</option>';
+		}
+
+		$plantilla = $this->reemplazar( $plantilla, '{{lista_cursos}}', $lista);
+
+		$plantilla = $this->reemplazar( $plantilla, '{{nombre_proyecto}}', $nombre);
+		$plantilla = $this->reemplazar( $plantilla, '{{descripcion_proyecto}}', $descripcion);
+		$plantilla = $this->reemplazar( $plantilla, '{{url_app_proyecto}}', $url_app);
+		$plantilla = $this->reemplazar( $plantilla, '{{url_code_proyecto}}', $url_code);
+		$plantilla = $this->reemplazar( $plantilla, '{{fecha_fin_proyecto}}', $fecha_fin);
+		$plantilla = $this->reemplazar( $plantilla, '{{estado_proyecto}}', $estado);
+		$plantilla = $this->reemplazar( $plantilla, '{{curso}}', $nombre_curso);
+		$plantilla = $this->reemplazar( $plantilla, '{{id_proyecto}}', $id);
 
 		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
 
@@ -247,7 +411,7 @@ class controladorInicio extends controlador{
 			$codigo_curso = $row['codigo'];
 			$nombre_curso = $row['nombre'];
 			$id_curso = $row['id_curso'];
-			//$nombre_docente_string = '"'.$nombre_docente.'"';
+			$nombre_curso_string = '"'.$nombre_curso.'"';
 			$listado .= "
 				<tr>
 					<td>
@@ -258,7 +422,7 @@ class controladorInicio extends controlador{
 					</td>
 					<td class='text-center'>
 						<a href='index.php?boton=modificar_curso&id=$id_curso' class='btn btn-sm bg-blue waves-effect'>Editar</a>
-						<button type='button' class='btn btn-sm bg-red waves-effect $class' $disabled>Eliminar</button>
+						<button type='button' class='btn btn-sm bg-red waves-effect' onclick='borrarCurso($id_curso, $nombre_curso_string);'>Eliminar</button>
 					</td>
 				</tr>";
 		}
@@ -634,6 +798,7 @@ class controladorInicio extends controlador{
 		header('Location: index.php');
 	}
 
+
 	public function agregarAdmin($docente){
 
 
@@ -747,6 +912,56 @@ class controladorInicio extends controlador{
  	 	//Guardo un mensaje para ser mostrado al registrar el docente en el curso
 		//$_SESSION['registro_exitoso'] = 'docente registrado registrado exitosamente';
 		header('Location: index.php');
+	}
+	
+	
+	
+	/**
+	 * Modificar proyecto
+	 */
+	
+	public function modificarProyecto($curso, $nombre, $url_app, $url_codigo, $descripcion, $id_proyecto){
+
+		//datos del arhivo 
+		$nombre_archivo = $_FILES['documento']['name']; 
+		$tipo_archivo = $_FILES['documento']['type']; 
+		$tamano_archivo = $_FILES['documento']['size'];
+		$ruta_subida =  __DIR__. '/../archivos/'. $nombre_archivo;
+		
+		//compruebo si las características del archivo son las que deseo 
+		if (!((strpos($tipo_archivo, "doc") || strpos($tipo_archivo, "pdf")) && ($tamano_archivo < 8000000))){
+			$_SESSION["mensaje"] = "La extension o el tamano de los archivos no es correcta. Se permiten archivos .pfd o .doc se permiten archivos de 8 Mb maximo."; 
+		}else{ 
+			//si cumple con las caracterisiticas lo guardo en la carpeta destino
+		   	if (move_uploaded_file($_FILES['documento']['tmp_name'], $ruta_subida)){ 
+		      	$_SESSION["mensaje"] = "El archivo ha sido cargado correctamente."; 
+		   	}else{ 
+		      	$_SESSION["mensaje"] = "Ocurrió algún error al subir el fichero. No pudo guardarse."; 
+		   	} 
+		}
+
+		$consulta1 = "UPDATE proyecto 
+				set id_curso = $curso,
+				nombre = '$nombre',
+				descripcion = '$descripcion',
+				url_app = '$url_app',
+				url_code = '$url_codigo' ";
+
+		if( isset($_FILES['documento']['name']) && 
+		!empty($_FILES['documento']['name']) &&  
+		!empty($_FILES['documento']['size'])) {
+			$consulta1 .= " archivo = '$ruta_subida' ";
+		}
+
+		$consulta1 .= "WHERE id_proyecto = $id_proyecto";
+
+		$this->modelo->conectar();
+		$this->modelo->consultar($consulta1);
+		$this->modelo->desconectar();
+		//var_dump($consulta1); die();
+ 	 	//Guardo un mensaje para ser mostrado al registrar el docente en el curso
+		//$_SESSION['registro_exitoso'] = 'docente registrado registrado exitosamente';
+		header('Location: index.php?boton=listado_proyectos');
 	}
 
 	public function generarReportes($tipo_reporte){
@@ -1461,16 +1676,46 @@ class controladorInicio extends controlador{
 
 	//Eliminar Docente
 
-	public function eliminarDocente( $id_docente ) {
-		$consulta1 = "DELETE FROM docente WHERE id_docente = $id_docente";
-		$this->modelo->conectar();
-		$resultado=$this->modelo->consultar($consulta1);
-		$this->modelo->desconectar();
+	public function eliminarDocente() {
+		if(isset($_POST['docente'])) {
+			$id_docente = $_POST['id'];
+			$consulta1 = "DELETE FROM docente WHERE id_docente = $id_docente";
+			$this->modelo->conectar();
+			$resultado=$this->modelo->consultar($consulta1);
+			$this->modelo->desconectar();
 
-		echo'<script type="text/javascript">
-				alert("Docente eliminado correctamente.");
-		</script>';
-		header('Location: index.php');
+			echo json_encode( array('response' => 1) );
+		}
+	}
+
+	//Eliminar Curso
+
+	public function eliminarCurso() {
+		if(isset($_POST['curso'])) {
+			$id_curso = $_POST['id'];
+			$consulta1 = "DELETE FROM curso WHERE id_curso = $id_curso";
+			$this->modelo->conectar();
+			$resultado=$this->modelo->consultar($consulta1);
+			$this->modelo->desconectar();
+
+			echo json_encode( array('response' => 1) );
+		}
+	}
+
+
+
+	//Eliminar Proyecto
+
+	public function eliminarProyecto() {
+		if(isset($_POST['proyecto'])) {
+			$id_proyecto = $_POST['id'];
+			$consulta1 = "DELETE FROM proyecto WHERE id_proyecto = $id_proyecto";
+			$this->modelo->conectar();
+			$resultado=$this->modelo->consultar($consulta1);
+			$this->modelo->desconectar();
+
+			echo json_encode( array('response' => 1) );
+		}
 	}
  
 

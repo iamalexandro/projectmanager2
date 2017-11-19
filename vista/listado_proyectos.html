@@ -163,12 +163,12 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="block-header">
-                    <h2>GENERAR LISTADO DE DOCENTES</h2>
+                    <h2>LISTADO DE PROYECTOS</h2>
                 </div>
             </div>
             <div class="row">
                 <div class="col-lg-4">
-                        <a href="index.php?boton=registrar_docente" class="btn btn-sm bg-green waves-effect'">Agregar Docente</a>
+                        <a href="index.php?boton=registrar_proyectos" class="btn btn-sm bg-green waves-effect'">Agregar Proyecto</a>
                 </div>
                 <br>
             </div>
@@ -180,13 +180,16 @@
                                <thead>
                                 <tr>
                                     <th>Nombre</th>
-                                    <th>Correo</th>
-                                    <th>telefono</th>
+                                    <!--<th>Descripcion</th>-->
+                                    <th>url</th>
+                                    <th class='text-center'>Fecha ini.</th>
+                                    <th class='text-center'>Fecha fin</th>
+                                    <th>Estado</th>
                                     <th class='text-center'>Acciones</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                    {{listado_docentes}}
+                                    {{listado_proyectos}}
                                 </tbody>
                             </table>
                         </div>
@@ -228,16 +231,16 @@
     <script src="recursos/js/demo.js"></script>
 
     <script>
-            function borrarDocente( id_docente, nombre ) {
-                if( confirm( '¿Desea eliminar el docente '+ nombre+'?' ) ) {
+            function borrarProyecto( id_proyecto ) {
+                if( confirm( '¿Desea eliminar el proyecto?' ) ) {
                     $.ajax({
                         type: "POST",
                         url: "index.php",
-                        data: {docente: true, id: id_docente},
+                        data: {proyecto: true, id: id_proyecto},
                         dataType: "json",
                         async: false
                     });
-                    window.location.href='index.php?boton=listado_docentes';
+                    window.location.href='index.php?boton=listado_proyectos';
                 }
             }
         </script>
