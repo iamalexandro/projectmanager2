@@ -201,7 +201,7 @@
 		}
 
 		if($tipo == "registrar_docente"){
-			$controladorInicio->guardarDocente($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password'], $_POST['admin']);
+			$controladorInicio->guardarDocente($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password']);
 		}
 	
 		if($tipo == "modificar_docente"){

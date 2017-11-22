@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 18-11-2017 a las 04:31:36
+-- Tiempo de generación: 20-11-2017 a las 17:52:07
 -- Versión del servidor: 10.1.26-MariaDB
 -- Versión de PHP: 7.1.9
 
@@ -68,7 +68,6 @@ INSERT INTO `curso` (`id_curso`, `codigo`, `nombre`) VALUES
 (5, '1150705', 'Ingenieria de software'),
 (6, '1150804', 'Redes de computadores'),
 (7, '1150604', 'Sistemas operativos'),
-(8, '1150709', 'Seminario integrador III'),
 (9, '1150817', 'Gestion de bases de datos');
 
 -- --------------------------------------------------------
@@ -80,7 +79,7 @@ INSERT INTO `curso` (`id_curso`, `codigo`, `nombre`) VALUES
 CREATE TABLE `curso_docente` (
   `id_curso_docente` int(10) NOT NULL,
   `id_curso` int(10) NOT NULL,
-  `id_docente` int(10) NOT NULL,
+  `id_docente` int(11) DEFAULT NULL,
   `grupo` varchar(1) DEFAULT NULL,
   `anio` int(4) DEFAULT NULL,
   `periodo` int(1) DEFAULT NULL
@@ -131,7 +130,6 @@ INSERT INTO `docente` (`id_docente`, `nombre`, `correo`, `telefono`, `contrasena
 (1, 'Carlos Tapias', 'carlosalexistr@ufps.edu.co', '3213332323', '$2y$10$ska9rqTEaTzFi7fkQdBw9eNDP8keFIQ1LAzCioRZKSn74ciTOm.ki'),
 (4, 'Brayam Mora', 'brayamalbertoma@ufps.edu.co', '3213342362', '$2y$10$/2yQIoPCDbMf4cB6p.wR3OlNM824ycMTj2Qkvdu0IUxNWSFvGShAK'),
 (5, 'Julian Olarte', 'fredyjulianot@ufps.edu.co', '5755656', '$2y$10$m5WWiMfoMDIxotM8sZ/6uucnGYoSYn/1.1VYyIikhla8XPNVd14Q2'),
-(13, 'Oscar Gallardo', 'oagallardo@ufps.edu.co', '555555555', '$2y$10$O6hXIOzixI5EmUvo73h4dOJL27rOR8b7uGLSXQGvUMgQXfhurH5CO'),
 (14, 'Janeth Parada', 'janethpc@ufps.edu.co', '3243342333', '$2y$10$kzv289hlAsjSo.wQXCPCAOz3xghfLK3O.8BZhu9Lr.NukRJNqhk5C'),
 (15, 'Martin Calixto', 'mcalixto@ufps.edu.co', '3155432213', '$2y$10$MKF4IBF3rQVWKSFFxzwAZu4KVeceo8bCYFiOO2sdirQJ1hrAM3ake'),
 (16, 'Pilar Rodriguez', 'judithdelpilart@ufps.edu.co', '32111123232', '$2y$10$XEhgrr4s/d1YbtmCqXg3H.oIWlPXCLbaoYNcDF7FrewZj0cKhgyou');
@@ -156,7 +154,6 @@ CREATE TABLE `estudiante` (
 --
 
 INSERT INTO `estudiante` (`id_estudiante`, `nombre`, `correo`, `telefono`, `contrasena`, `codigo`) VALUES
-(8, 'Cristhian Leon', 'cristian@ufps.edu.co', '5555555', '123456', 1151023),
 (12, 'Cristiano Ronaldo', 'cristianor@ufps.edu.co', '777776', '$2y$10$Llasxzy79dv3ZNPGiKmyQ.lIf0XtkOfF7WKYtgUkwC8xoWBG9IZIO', 1151010);
 
 -- --------------------------------------------------------
@@ -167,7 +164,7 @@ INSERT INTO `estudiante` (`id_estudiante`, `nombre`, `correo`, `telefono`, `cont
 
 CREATE TABLE `proyecto` (
   `id_proyecto` int(10) NOT NULL,
-  `id_docente` int(10) NOT NULL,
+  `id_docente` int(11) DEFAULT NULL,
   `id_curso` int(10) NOT NULL,
   `nombre` varchar(100) DEFAULT NULL,
   `descripcion` varchar(200) DEFAULT NULL,
@@ -186,7 +183,8 @@ CREATE TABLE `proyecto` (
 INSERT INTO `proyecto` (`id_proyecto`, `id_docente`, `id_curso`, `nombre`, `descripcion`, `url_app`, `url_code`, `fecha_inicio`, `fecha_fin`, `estado`, `archivo`) VALUES
 (1, 1, 1, 'Gestor de proyectos', 'Sistema gestor de proyectos del programa ingenieria de sistemas', 'gestordeproyectos.ufps.edu.co', 'codigoproyecto.ufps.edu.co', '2017-06-15', NULL, 'En desarrollo', 'C:xampphtdocsprojectmanagercontrolador/../archivos/Taller4.pdf'),
 (2, 4, 3, 'Proyecto de Cableado Estructurado', 'Realizado con el fin de plantear un diseÃ±o de cableado estructurado.', 'www.cableadoEstructurado.com', 'github.com/brayammora/cableadoEstructurado', '2017-06-21', NULL, 'En desarrollo', 'C:xampphtdocsprojectmanagercontrolador/../archivos/'),
-(3, 4, 3, 'Proyecto 2', 'Proyecto numero 2 jeje', 'www.proy.com', 'github.com/brayammora/proy', '2017-06-21', NULL, 'En desarrollo', 'C:xampphtdocsprojectmanagercontrolador/../archivos/');
+(3, 4, 3, 'Proyecto 2', 'Proyecto numero 2 jeje', 'www.proy.com', 'github.com/brayammora/proy', '2017-06-21', NULL, 'En desarrollo', 'C:xampphtdocsprojectmanagercontrolador/../archivos/'),
+(4, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -199,13 +197,6 @@ CREATE TABLE `proyecto_estudiante` (
   `id_proyecto` int(10) NOT NULL,
   `id_estudiante` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Tabla que guarda los datos de los proyectos_estudiantes';
-
---
--- Volcado de datos para la tabla `proyecto_estudiante`
---
-
-INSERT INTO `proyecto_estudiante` (`id_proyecto_estudiante`, `id_proyecto`, `id_estudiante`) VALUES
-(1, 3, 8);
 
 --
 -- Índices para tablas volcadas
@@ -235,7 +226,9 @@ ALTER TABLE `curso_docente`
 -- Indices de la tabla `curso_estudiante`
 --
 ALTER TABLE `curso_estudiante`
-  ADD PRIMARY KEY (`id_curso_estudiante`);
+  ADD PRIMARY KEY (`id_curso_estudiante`),
+  ADD KEY `curso_estudiante_curso_fk` (`id_curso`),
+  ADD KEY `id_estudiante` (`id_estudiante`);
 
 --
 -- Indices de la tabla `docente`
@@ -265,7 +258,7 @@ ALTER TABLE `proyecto`
 ALTER TABLE `proyecto_estudiante`
   ADD PRIMARY KEY (`id_proyecto_estudiante`),
   ADD KEY `proyecto_estudiante_proyecto_fk` (`id_proyecto`),
-  ADD KEY `proyecto_estudiante_estudiantefk` (`id_estudiante`);
+  ADD KEY `proyecto_estudiante_estudiante_fk` (`id_estudiante`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -305,7 +298,7 @@ ALTER TABLE `estudiante`
 -- AUTO_INCREMENT de la tabla `proyecto`
 --
 ALTER TABLE `proyecto`
-  MODIFY `id_proyecto` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_proyecto` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `proyecto_estudiante`
@@ -327,22 +320,29 @@ ALTER TABLE `administrador`
 -- Filtros para la tabla `curso_docente`
 --
 ALTER TABLE `curso_docente`
-  ADD CONSTRAINT `curso_docente_curso_fk` FOREIGN KEY (`id_curso`) REFERENCES `curso` (`id_curso`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `curso_docente_docente_fk` FOREIGN KEY (`id_docente`) REFERENCES `docente` (`id_docente`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `curso_docente_curso_fk` FOREIGN KEY (`id_curso`) REFERENCES `curso` (`id_curso`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `curso_docente_docente_fk` FOREIGN KEY (`id_docente`) REFERENCES `docente` (`id_docente`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `curso_estudiante`
+--
+ALTER TABLE `curso_estudiante`
+  ADD CONSTRAINT `curso_estudiante_curso_fk` FOREIGN KEY (`id_curso`) REFERENCES `curso` (`id_curso`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `curso_estudiante_ibfk_1` FOREIGN KEY (`id_estudiante`) REFERENCES `estudiante` (`id_estudiante`) ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `proyecto`
 --
 ALTER TABLE `proyecto`
-  ADD CONSTRAINT `proyecto_curso_fk` FOREIGN KEY (`id_curso`) REFERENCES `curso` (`id_curso`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `proyecto_docente_fk` FOREIGN KEY (`id_docente`) REFERENCES `docente` (`id_docente`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `proyect_curso_fk` FOREIGN KEY (`id_curso`) REFERENCES `curso` (`id_curso`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `proyecto_docente_fk` FOREIGN KEY (`id_docente`) REFERENCES `docente` (`id_docente`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `proyecto_estudiante`
 --
 ALTER TABLE `proyecto_estudiante`
-  ADD CONSTRAINT `proyecto_estudiante_estudiantefk` FOREIGN KEY (`id_estudiante`) REFERENCES `estudiante` (`id_estudiante`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `proyecto_estudiante_proyecto_fk` FOREIGN KEY (`id_proyecto`) REFERENCES `proyecto` (`id_proyecto`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `proyecto_estudiante_estudiante_fk` FOREIGN KEY (`id_estudiante`) REFERENCES `estudiante` (`id_estudiante`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `proyecto_estudiante_proyecto_fk` FOREIGN KEY (`id_proyecto`) REFERENCES `proyecto` (`id_proyecto`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -619,7 +619,7 @@ class controladorInicio extends controlador{
 		
 	}
 	/*************************************************************************************************
-	 ***********************    METODOS DEL PROYECTO   ********************************************************
+	 ***********************    FUNCIONES DEL PROYECTO    ********************************************
 	 *************************************************************************************************
 	*/
 
@@ -632,8 +632,6 @@ class controladorInicio extends controlador{
 		
 		return isset( $_SESSION['admin']) || isset( $_SESSION['docente']);
 	}
-
-
 
 	/**
 	 * Guarda la sesion de un usuario al loguearse
@@ -701,12 +699,12 @@ class controladorInicio extends controlador{
 					}	
 				}
 			}
-		}else{
-			
-			$_SESSION['mensaje'] = "El usuario o la contrase&nacute;a son incorrectos.";
-		}
 
-		header('Location: index.php');
+			header('Location: index.php');
+
+		}else{
+			$this->mostrarMensaje("El usuario o la contrase&nacute;a son incorrectos");
+		}
 	}
 
 
@@ -718,8 +716,15 @@ class controladorInicio extends controlador{
 
 	
 
-
-	public function guardarDocente($nombre, $telefono, $correo, $password, $admin){
+	/**
+	 * Registra un docente en la bd y confirma si el registro fue fallido o exitoso
+	 * @param String $nombre 
+	 * @param String $telefono
+	 * @param String $correo
+	 * @param String $password   
+	 * @return void
+	 */
+	public function guardarDocente($nombre, $telefono, $correo, $password){
 
 
 	 	//Busco todas las personas para hacer la comprobacion si ya existe o no en la base de datos 	
@@ -742,46 +747,55 @@ class controladorInicio extends controlador{
 			$this->modelo->consultar($consulta2);
 			$this->modelo->desconectar();
 
-			
-	 	 	//Guardo un mensaje para ser mostrado al registrar el usuario
-			echo'<script type="text/javascript">
-            		alert("Registro exitoso.");
-         		</script>';
-			header('Location: index.php');
+			//Guardo un mensaje para ser mostrado al registrar el usuario
+			$this->mostrarMensaje("Registro exitoso.");
 
 		}else{
 
-	 	 	//Si el usuario ya esta registrado muestre la vista de registro
-			echo'<script type="text/javascript">
-            		alert("Registro fallido: Usuario ya existe.");
-         		</script>';
-			header('Location: index.php');
+			//Si el usuario ya esta registrado muestre la vista de registro
+			$this->mostrarMensaje("Registro fallido: Usuario ya existe.");
 		}
 	}
 
+
+	/**
+	 * Modifica un docente en la bd y confirma si el registro fue fallido o exitoso
+	 * @param String $nombre 
+	 * @param String $telefono
+	 * @param String $correo
+	 * @param String $password
+	 * @param int $id_docente   
+	 * @return void
+	 */
 	public function modificarDocente($nombre, $telefono, $correo, $password, $id_docente){
 		 
 		$consulta2 = "UPDATE docente set nombre = '$nombre', 
 			correo = '$correo', 
 			telefono = '$telefono' ";
 
-			if( !empty($password) ) {
-				$passh= password_hash($password, PASSWORD_DEFAULT);
-				$consulta2 .= "contrasena = '$passh' ";
-			}
+		if( !empty($password) ) {
+			$passh= password_hash($password, PASSWORD_DEFAULT);
+			$consulta2 .= ", contrasena = '$passh' ";
+		}
+		
+		$consulta2.="WHERE id_docente = ".$id_docente."";
 
 		$this->modelo->conectar();
 		$this->modelo->consultar($consulta2);
 		$this->modelo->desconectar();
 
-		
-			//Guardo un mensaje para ser mostrado al registrar el usuario
-		echo'<script type="text/javascript">
-							alert("Docente modificado correctamente.");
-					</script>';
-		header('Location: index.php');
+		//Muestro un mensaje para ser mostrado al registrar el usuario
+		$this->mostrarMensaje("Docente modificado correctamente.");
 	}
 
+
+	/**
+	 * Modifica un curso en la bd y confirma si el registro fue fallido o exitoso
+	 * @param String $nombre 
+	 * @param String $descripcion
+	 * @param int $id_docente   
+	 * @return void
+	 */
 	public function modificarCurso($nombre, $descripcion, $id_curso){
 		 
 		$consulta2 = "UPDATE curso set nombre = '$nombre', 
@@ -791,14 +805,16 @@ class controladorInicio extends controlador{
 		$this->modelo->consultar($consulta2);
 		$this->modelo->desconectar();
 
-			//Guardo un mensaje para ser mostrado al registrar el usuario
-		echo'<script type="text/javascript">
-							alert("Curso modificado correctamente.");
-					</script>';
-		header('Location: index.php');
+		//Guardo un mensaje para ser mostrado al registrar el usuario
+		$this->mostrarMensaje("Curso modificado correctamente.");
 	}
 
 
+	/**
+	 * Agrega un docente como admin y confirma si el registro fue fallido o exitoso
+	 * @param int $docente   
+	 * @return void
+	 */
 	public function agregarAdmin($docente){
 
 
@@ -821,22 +837,23 @@ class controladorInicio extends controlador{
 			$this->modelo->desconectar();
 
 			
-	 	 	//Guardo un mensaje para ser mostrado al registrar el usuario
-			echo'<script type="text/javascript">
-            		alert("Registro exitoso.");
-         		</script>';
-			header('Location: index.php');
-
+			//Guardo un mensaje para ser mostrado al registrar el usuario
+			$this->mostrarMensaje("Registro de usuario exitoso.");
+		
 		}else{
 
 	 	 	//Si el usuario ya esta registrado muestre la vista de registro
-			echo'<script type="text/javascript">
-            		alert("Registro fallido: Usuario ya existe.");
-         		</script>';
-			header('Location: index.php');
+			$this->mostrarMensaje("Registro fallido: Usuario ya existe.");
 		}
 	}
 
+
+	/**
+	 * Registra un curso y confirma si el registro fue fallido o exitoso
+	 * @param String $codigo
+	 * @param String $nombre   
+	 * @return void
+	 */
 	public function registrarCurso($codigo, $nombre){
 
 		$consulta1 = "INSERT INTO curso VALUES( null, '".$codigo."', '".$nombre."')";
@@ -844,37 +861,541 @@ class controladorInicio extends controlador{
 		$this->modelo->consultar($consulta1);
 		$this->modelo->desconectar();
 
-		
  	 	//Guardo un mensaje para ser mostrado al registrar el curso
-		echo'<script type="text/javascript">
-    			alert("Registro exitoso.");
- 			</script>';
-		header('Location: index.php');
+		$this->mostrarMensaje("Registro de curso exitoso.");
 	}
 
+
+
+	/**
+	 * Genera un reporte segun el tipo de reporte solicitado
+	 * @param String $tipo_reporte
+	 * @return void
+	 */	
+	public function generarReportes($tipo_reporte){
+
+		//vista inicial de la tabla de reportes
+		$replace = '<thead>
+		<tr>
+			<th>Nombre proyecto</th>
+			<th>Descripcion</th>
+			<th>Estado</th>
+			<th>Codigo materia</th>
+			<th>Nombre materia</th>
+			<th>Grupo</th>
+		</tr>
+		</thead>
+		<tfoot>
+		<tr>
+			<th>Nombre proyecto</th>
+			<th>Descripcion</th>
+			<th>Estado</th>
+			<th>Codigo materia</th>
+			<th>Nombre materia</th>
+			<th>Grupo</th>
+		</tr>
+		</tfoot>
+		<tbody>
+
+		</tbody>';
+
+
+		switch($tipo_reporte){
+
+			//Estudiantes por curso
+			case 'estudiantes_curso':
+				$consulta1 = "SELECT e.nombre, e.correo, e.telefono, c.codigo, c.nombre  FROM estudiante e, proyecto p, proyecto_estudiante pe, curso c WHERE e.id_estudiante = pe.id_estudiante AND p.id_proyecto = pe.id_proyecto AND p.id_curso = c.id_curso";
+				$this->modelo->conectar();
+				$respuesta1 = $this->modelo->consultar($consulta1);
+				$this->modelo->desconectar();	
+
+				$lista = '<thead>
+								<tr>
+									<th>Nombre estudiante</th>
+									<th>Correo</th>
+									<th>Telefono</th>
+									<th>Codigo materia</th>
+									<th>Nombre materia</th>
+									<th>Grupo</th>
+								</tr>
+							</thead>
+							<tfoot>
+								<tr>
+									<th>Nombre estudiante</th>
+									<th>Correo</th>
+									<th>Telefono</th>
+									<th>Codigo materia</th>
+									<th>Nombre materia</th>
+									<th>Grupo</th>
+								</tr>
+							</tfoot>
+							<tbody>';
+				while ($row = mysqli_fetch_array($respuesta1)) {
+					$lista .= '	<tr>
+										<td>'.$row['nombre'].'</td>
+										<td>'.$row['correo'].'</td>
+										<td>'.$row['telefono'].'</td>
+										<td>'.$row['codigo'].'</td>
+										<td>'.$row['nombre'].'</td>
+										<td> A </td>
+									</tr>';
+				}
+				$lista.='</tbody>';
+
+				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
+				//reemplazo la vista inicial con la nueva vista				
+				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
+				$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
+				$this->mostrarVista($plantillaConDatos);
+				break;
+
+			//proyectos por curso
+			case 'proyecto_curso':
+				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.codigo, c.nombre  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
+				$this->modelo->conectar();
+				$respuesta1 = $this->modelo->consultar($consulta1);
+				$this->modelo->desconectar();
+
+				$lista = '<thead>
+							<tr>
+								<th>Nombre proyecto</th>
+								<th>Descripcion</th>
+								<th>Estado</th>
+								<th>Codigo materia</th>
+								<th>Nombre materia</th>
+								<th>Grupo</th>
+							</tr>
+							</thead>
+							<tfoot>
+							<tr>
+								<th>Nombre proyecto</th>
+								<th>Descripcion</th>
+								<th>Estado</th>
+								<th>Codigo materia</th>
+								<th>Nombre materia</th>
+								<th>Grupo</th>
+							</tr>
+							</tfoot>
+							<tbody>';
+				while ($row = mysqli_fetch_array($respuesta1)) {
+					$lista .= '
+								
+									<tr>
+										<td>'.$row['nombre'].'</td>
+										<td>'.$row['descripcion'].'</td>
+										<td>'.$row['estado'].'</td>
+										<td>'.$row['codigo'].'</td>
+										<td>'.$row['nombre'].'</td>
+										<td> A </td>
+									</tr>';
+				}
+				$lista.='</tbody>';
+				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
+				//reemplazo la vista inicial con la nueva vista
+				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
+				$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
+				$this->mostrarVista($plantillaConDatos);
+				break;
+
+			//proyectos por semestre
+			case 'proyecto_semestre':
+				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.codigo, c.nombre  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
+				$this->modelo->conectar();
+				$respuesta1 = $this->modelo->consultar($consulta1);
+				$this->modelo->desconectar();
+
+				$lista = '<thead>
+							<tr>
+								<th>Nombre proyecto</th>
+								<th>Descripcion</th>
+								<th>Estado</th>
+								<th>Codigo materia</th>
+								<th>Nombre materia</th>
+								<th>Semestre</th>
+							</tr>
+							</thead>
+							<tfoot>
+							<tr>
+								<th>Nombre proyecto</th>
+								<th>Descripcion</th>
+								<th>Estado</th>
+								<th>Codigo materia</th>
+								<th>Nombre materia</th>
+								<th>Semestre</th>
+							</tr>
+							</tfoot>
+							<tbody>';
+				while ($row = mysqli_fetch_array($respuesta1)) {
+					$lista .= '
+								
+									<tr>
+										<td>'.$row['nombre'].'</td>
+										<td>'.$row['descripcion'].'</td>
+										<td>'.$row['estado'].'</td>
+										<td>'.$row['codigo'].'</td>
+										<td>'.$row['nombre'].'</td>
+										<td> 2017 </td>
+									</tr>';
+				}
+				$lista.='</tbody>';
+				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
+				//reemplazo la vista inicial con la nueva vista
+				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
+				$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
+				$this->mostrarVista($plantillaConDatos);
+				break;
+
+			//proyectos sin terminar
+			case 'proyectos_sin_terminar':
+
+				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.codigo, c.nombre  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
+				$this->modelo->conectar();
+				$respuesta1 = $this->modelo->consultar($consulta1);
+				$this->modelo->desconectar();
+
+				$lista = '<thead>
+							<tr>
+								<th>Nombre proyecto</th>
+								<th>Descripcion</th>
+								<th>Estado</th>
+								<th>Codigo materia</th>
+								<th>Nombre materia</th>
+								<th>Grupo</th>
+							</tr>
+							</thead>
+							<tfoot>
+							<tr>
+								<th>Nombre proyecto</th>
+								<th>Descripcion</th>
+								<th>Estado</th>
+								<th>Codigo materia</th>
+								<th>Nombre materia</th>
+								<th>Grupo</th>
+							</tr>
+							</tfoot>
+							<tbody>';
+				while ($row = mysqli_fetch_array($respuesta1)) {
+					$lista .= '
+								
+									<tr>
+										<td>'.$row['nombre'].'</td>
+										<td>'.$row['descripcion'].'</td>
+										<td>'.$row['estado'].'</td>
+										<td>'.$row['codigo'].'</td>
+										<td>'.$row['nombre'].'</td>
+										<td> A </td>
+									</tr>';
+				}
+				$lista.='</tbody>';
+				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
+				//reemplazo la vista inicial con la nueva vista
+				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
+				$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
+				$this->mostrarVista($plantillaConDatos);
+				break;
+
+			case 'proyectos_todos':
+
+				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.codigo, c.nombre  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
+				$this->modelo->conectar();
+				$respuesta1 = $this->modelo->consultar($consulta1);
+				$this->modelo->desconectar();
+
+				$lista = '<thead>
+							<tr>
+								<th>Nombre proyecto</th>
+								<th>Descripcion</th>
+								<th>Estado</th>
+								<th>Codigo materia</th>
+								<th>Nombre materia</th>
+								<th>Grupo</th>
+							</tr>
+							</thead>
+							<tfoot>
+							<tr>
+								<th>Nombre proyecto</th>
+								<th>Descripcion</th>
+								<th>Estado</th>
+								<th>Codigo materia</th>
+								<th>Nombre materia</th>
+								<th>Grupo</th>
+							</tr>
+							</tfoot>
+							<tbody>';
+				while ($row = mysqli_fetch_array($respuesta1)) {
+					$lista .= '
+								
+									<tr>
+										<td>'.$row['nombre'].'</td>
+										<td>'.$row['descripcion'].'</td>
+										<td>'.$row['estado'].'</td>
+										<td>'.$row['codigo'].'</td>
+										<td>'.$row['nombre'].'</td>
+										<td> A </td>
+									</tr>';
+				}
+				$lista.='</tbody>';
+				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
+				//reemplazo la vista inicial con la nueva vista
+				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
+				$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
+				$this->mostrarVista($plantillaConDatos);
+				break;
+
+			case 'curso_semestre':
+				$consulta1 = "SELECT c.codigo, c.nombre  FROM curso c";
+				$this->modelo->conectar();
+				$respuesta1 = $this->modelo->consultar($consulta1);
+				$this->modelo->desconectar();
+
+				$lista = '<thead>
+							<tr>
+								<th>Nombre curso</th>
+								<th>Descripcion</th>
+								<th>A&nacute;o</th>
+								<th>Periodo</th>
+								<th>Grupo</th>
+								<th>Semestre</th>
+							</tr>
+							</thead>
+							<tfoot>
+							<tr>
+								<th>Nombre curso</th>
+								<th>Descripcion</th>
+								<th>A&nacute;o</th>
+								<th>Periodo</th>
+								<th>Grupo</th>
+								<th>Semestre</th>
+							</tr>
+							</tfoot>
+							<tbody>';
+				while ($row = mysqli_fetch_array($respuesta1)) {
+					$lista .= '
+								
+									<tr>
+										<td>'.$row['codigo'].'</td>
+										<td>'.$row['nombre'].'</td>
+										<td> 2017 </td>
+										<td> II </td>
+										<td> A </td>
+										<td> Actual </td>
+									</tr>';
+				}
+				$lista.='</tbody>';
+				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
+				//reemplazo la vista inicial con la nueva vista
+				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
+				$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
+				$this->mostrarVista($plantillaConDatos);
+				break;
+
+			case 'docentes_semestre':
+				$consulta1 = "SELECT d.nombre, d.correo, d.telefono FROM docente d";
+				$this->modelo->conectar();
+				$respuesta1 = $this->modelo->consultar($consulta1);
+				$this->modelo->desconectar();
+
+				$lista = '<thead>
+							<tr>
+								<th>Nombre docente</th>
+								<th>Correo docente</th>
+								<th>Telefono</th>
+								<th>A&nacute;o</th>
+								<th>Periodo</th>
+								<th>Semestre</th>
+							</tr>
+							</thead>
+							<tfoot>
+							<tr>
+								<th>Nombre docente</th>
+								<th>Correo docente</th>
+								<th>Telefono</th>
+								<th>A&nacute;o</th>
+								<th>Periodo</th>
+								<th>Semestre</th>
+							</tr>
+							</tfoot>
+							<tbody>';
+				while ($row = mysqli_fetch_array($respuesta1)) {
+					$lista .= '
+								
+									<tr>
+										<td>'.$row['nombre'].'</td>
+										<td>'.$row['correo'].'</td>
+										<td>'.$row['telefono'].'</td>
+										<td> 2017 </td>
+										<td> II </td>
+										<td> Actual </td>
+									</tr>';
+				}
+				$lista.='</tbody>';
+				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
+				//reemplazo la vista inicial con la nueva vista
+				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
+				$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
+				$this->mostrarVista($plantillaConDatos);
+				break;
+		}
+	}
+		
+	
+	/**
+	 * Envia un correo electronico a un docente para que pueda registrarse en la plataforma
+	 * @param String $email
+	 * @return void
+	 */	
+	public function invitarDocente($email){
+
+		
+		/*
+				//funcion mail simple 
+				$mail = "Lo invitamos a formar parte de Project Manager";
+				//Titulo
+				$titulo = "Project Manager UFPS";
+				//cabecera
+				$headers = "MIME-Version: 1.0\r\n"; 
+				$headers .= "Content-type: text/html; charset=iso-8859-1\r\n"; 
+				//dirección del remitente 
+				$headers .= "From: ProjectManagerTeam <".$email.">\r\n";
+				//Enviamos el mensaje a tu_dirección_email 
+				$bool = mail($email,$titulo,$mail,$headers);
+				if($bool){
+					$this->mostrarMensaje("Enviado Correctamente");
+				}else{
+					$this->mostrarMensaje("NO ENVIADO, intentar de nuevo");
+				}
+		*/		
+
+		
+		//funcion para enviar correo con la libreria PHPMailer
+		$mail = new PHPMailer();
+
+		//Luego tenemos que iniciar la validación por SMTP:
+		$mail->IsSMTP();
+		$mail->SMTPAuth = true;
+		$mail->SMTPSecure = 'tls';
+		$mail->SMTPDebug = 4;
+		$mail->Host = "smtp.gmailcom"; // A RELLENAR. Aquí pondremos el SMTP a utilizar. Por ej. mail.midominio.com
+		$mail->Username = "brayamalbertoma@ufps.edu.co"; // A RELLENAR. Email de la cuenta de correo. ej.info@midominio.com La cuenta de correo debe ser creada previamente. 
+		$mail->Password = "Elvira22*"; // A RELLENAR. Aqui pondremos la contraseña de la cuenta de correo
+		$mail->Port = 587; // Puerto de conexión al servidor de envio. 
+		$mail->From = "brayamalbertoma@ufps.edu.co"; // A RELLENARDesde donde enviamos (Para mostrar). Puede ser el mismo que el email creado previamente.
+		$mail->FromName = "Projec Manager UFPS"; //A RELLENAR Nombre a mostrar del remitente. 
+		$mail->AddAddress( $email ); // Esta es la dirección a donde enviamos 
+		$mail->IsHTML(true); // El correo se envía como HTML 
+		$mail->Subject = "Invitacion Project Manager"; // Este es el titulo del email. 
+		$body = "Buen dia docente."; 
+		$body .= "Lo invitamos a formar parte de la plataforma de administracion de projectos: <br> <b>Project Manager</b>"; 
+		$mail->Body = $body; // Mensaje a enviar. 
+		$exito = $mail->Send(); // Envía el correo.
+		if($exito){ 
+			$this->mostrarMensaje("Enviado Correctamente");
+		}else{
+			$this->mostrarMensaje("NO ENVIADO, intentar de nuevo");
+		}
+	}
+	
+		
+	/**
+	 * Elimina un docente
+	 * @return void
+	 */	
+	public function eliminarDocente() {
+		if(isset($_POST['docente'])) {
+			$id_docente = $_POST['id'];
+			$consulta1 = "DELETE FROM docente WHERE id_docente = $id_docente";
+			$this->modelo->conectar();
+			$resultado=$this->modelo->consultar($consulta1);
+			$this->modelo->desconectar();
+
+			echo json_encode( array('response' => 1) );
+		}
+	}
+		
+	/**
+	 * Elimina un curso
+	 * @return void
+	 */	
+	public function eliminarCurso() {
+		if(isset($_POST['curso'])) {
+			$id_curso = $_POST['id'];
+			$consulta1 = "DELETE FROM curso WHERE id_curso = $id_curso";
+			$this->modelo->conectar();
+			$resultado=$this->modelo->consultar($consulta1);
+			$this->modelo->desconectar();
+
+			echo json_encode( array('response' => 1) );
+		}
+	}
+		
+		
+	/**
+	 * Elimina un proyecto
+	 * @return void
+	 */	
+	public function eliminarProyecto() {
+		if(isset($_POST['proyecto'])) {
+			$id_proyecto = $_POST['id'];
+			$consulta1 = "DELETE FROM proyecto WHERE id_proyecto = $id_proyecto";
+			$this->modelo->conectar();
+			$resultado=$this->modelo->consultar($consulta1);
+			$this->modelo->desconectar();
+
+			echo json_encode( array('response' => 1) );
+		}
+	}
+
+
+
+
+
+	/************************************************************************
+	 ******************* FUNCIONES DOCENTE **********************************
+	 ************************************************************************/
+	 
+
+
+	/**
+	 * Registra una persona en un curso y confirma si el registro fue fallido o exitoso
+	 * @param String $codigo
+	 * @param String $nombre   
+	 * @return void
+	 */
 	public function inscribirCurso($curso, $letra){
 
 		if($letra == 'a'){
 
-			$consulta1 = "INSERT INTO curso_docente VALUES( null, ".$curso.", ".$_SESSION['admin'].", 'A', 2017, 1)";
+			$consulta1 = "INSERT INTO curso_docente VALUES( null, ".$curso.", ".$_SESSION['admin'].", 'A', 2017, 2)";
 		}else{
 			if($letra == 'd'){
 				
-				$consulta1 = "INSERT INTO curso_docente VALUES( null, ".$curso.", ".$_SESSION['docente'].", 'A', 2017, 1)";
+				$consulta1 = "INSERT INTO curso_docente VALUES( null, ".$curso.", ".$_SESSION['docente'].", 'A', 2017, 2)";
+			}else{
+				if($letra == 'e'){
+					
+					$consulta1 = "INSERT INTO curso_estudiante VALUES( null, ".$curso.", ".$_SESSION['estudiante'].", 'A', 2017, 2)";
+				}
 			}
 		}
 		$this->modelo->conectar();
 		$this->modelo->consultar($consulta1);
 		$this->modelo->desconectar();
-
 		
- 	 	//Guardo un mensaje para ser mostrado al registrar el docente en el curso
-		echo'<script type="text/javascript">
-    			alert("Registro exitoso.");
- 			</script>';
-		header('Location: index.php');
+		//Guardo un mensaje para ser mostrado al registrar el usuario en el curso
+		$this->mostrarMensaje("Registro exitoso.");
 	}
 
+
+	/**
+	 * Registra una proyecto y confirma si el registro fue fallido o exitoso
+	 * @param String $letra
+	 * @param String $curso
+	 * @param String $nombre
+	 * @param String $url_app
+	 * @param String $url_codigo
+	 * @param String $descripcion  
+	 * @return void
+	 */
 	public function registrarProyecto($letra, $curso, $nombre, $url_app, $url_codigo, $descripcion){
 
 
@@ -909,19 +1430,22 @@ class controladorInicio extends controlador{
 		$this->modelo->desconectar();
 
 		
- 	 	//Guardo un mensaje para ser mostrado al registrar el docente en el curso
-		//$_SESSION['registro_exitoso'] = 'docente registrado registrado exitosamente';
-		header('Location: index.php');
+ 	 	//Guardo un mensaje para ser mostrado al registrar el proyecto
+		$this->mostrarMensaje("Registro exitoso.");		  
 	}
 	
-	
-	
 	/**
-	 * Modificar proyecto
+	 * Modifica un proyecto y confirma si el registro fue fallido o exitoso
+	 * @param String $letra
+	 * @param String $curso
+	 * @param String $nombre
+	 * @param String $url_app
+	 * @param String $url_codigo
+	 * @param String $descripcion  
+	 * @return void
 	 */
-	
 	public function modificarProyecto($curso, $nombre, $url_app, $url_codigo, $descripcion, $id_proyecto){
-
+		
 		//datos del arhivo 
 		$nombre_archivo = $_FILES['documento']['name']; 
 		$tipo_archivo = $_FILES['documento']['type']; 
@@ -933,19 +1457,15 @@ class controladorInicio extends controlador{
 			$_SESSION["mensaje"] = "La extension o el tamano de los archivos no es correcta. Se permiten archivos .pfd o .doc se permiten archivos de 8 Mb maximo."; 
 		}else{ 
 			//si cumple con las caracterisiticas lo guardo en la carpeta destino
-		   	if (move_uploaded_file($_FILES['documento']['tmp_name'], $ruta_subida)){ 
-		      	$_SESSION["mensaje"] = "El archivo ha sido cargado correctamente."; 
-		   	}else{ 
-		      	$_SESSION["mensaje"] = "Ocurrió algún error al subir el fichero. No pudo guardarse."; 
-		   	} 
+				if (move_uploaded_file($_FILES['documento']['tmp_name'], $ruta_subida)){ 
+					$_SESSION["mensaje"] = "El archivo ha sido cargado correctamente."; 
+				}else{ 
+					$_SESSION["mensaje"] = "Ocurrió algún error al subir el fichero. No pudo guardarse."; 
+				} 
 		}
 
 		$consulta1 = "UPDATE proyecto 
-				set id_curso = $curso,
-				nombre = '$nombre',
-				descripcion = '$descripcion',
-				url_app = '$url_app',
-				url_code = '$url_codigo' ";
+				set id_curso = $curso, nombre = '$nombre', descripcion = '$descripcion', url_app = '$url_app', url_code = '$url_codigo' ";
 
 		if( isset($_FILES['documento']['name']) && 
 		!empty($_FILES['documento']['name']) &&  
@@ -958,684 +1478,29 @@ class controladorInicio extends controlador{
 		$this->modelo->conectar();
 		$this->modelo->consultar($consulta1);
 		$this->modelo->desconectar();
-		//var_dump($consulta1); die();
- 	 	//Guardo un mensaje para ser mostrado al registrar el docente en el curso
-		//$_SESSION['registro_exitoso'] = 'docente registrado registrado exitosamente';
-		header('Location: index.php?boton=listado_proyectos');
+		
+		//Guardo un mensaje para ser mostrado al registrar el proyecto
+		$this->mostrarMensaje("Registro exitoso.");	
 	}
+	
+	
+	/************************************************************************
+	 ******************* FUNCIONES ESTUDIANTE *******************************
+	 ************************************************************************/
 
-	public function generarReportes($tipo_reporte){
-
-		switch($tipo_reporte){
-
-			//Estudiantes por curso
-			case 'estudiantes_curso':
-				$consulta1 = "SELECT e.nombre, e.correo, e.telefono, c.codigo, c.nombre  FROM estudiante e, proyecto p, proyecto_estudiante pe, curso c WHERE e.id_estudiante = pe.id_estudiante AND p.id_proyecto = pe.id_proyecto AND p.id_curso = c.id_curso";
-				$this->modelo->conectar();
-				$respuesta1 = $this->modelo->consultar($consulta1);
-				$this->modelo->desconectar();	
-
-				$lista = '<thead>
-                                <tr>
-                                    <th>Nombre estudiante</th>
-                                    <th>Correo</th>
-                                    <th>Telefono</th>
-                                    <th>Codigo materia</th>
-                                    <th>Nombre materia</th>
-                                    <th>Grupo</th>
-                                </tr>
-                            </thead>
-                            <tfoot>
-                                <tr>
-                                    <th>Nombre estudiante</th>
-                                    <th>Correo</th>
-                                    <th>Telefono</th>
-                                    <th>Codigo materia</th>
-                                    <th>Nombre materia</th>
-                                    <th>Grupo</th>
-                                </tr>
-                            </tfoot>
-                            <tbody>';
-				while ($row = mysqli_fetch_array($respuesta1)) {
-					$lista .= '	<tr>
-				                        <td>'.$row['nombre'].'</td>
-				                        <td>'.$row['correo'].'</td>
-				                        <td>'.$row['telefono'].'</td>
-				                        <td>'.$row['codigo'].'</td>
-				                        <td>'.$row['nombre'].'</td>
-				                        <td> A </td>
-			                        </tr>';
-				}
-				$lista.='</tbody>';
-
-				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
-				$replace = '<thead>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </thead>
-                            <tfoot>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </tfoot>
-                            <tbody>
-
-                            </tbody>';
-				
-				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
-
-				$consulta2 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-
-				$this->modelo->conectar();
-				$respuesta2 = $this->modelo->consultar($consulta2);
-				$this->modelo->desconectar();
-
-				$nombre = '';
-				$correo = '';
-				while ($row = mysqli_fetch_array($respuesta2)) {
-					$nombre = $row['nombre'];
-					$correo = $row['correo'];
-				}
-
-				$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-				$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-				$this->mostrarVista($plantilla);
-
-				break;
-
-			//proyectos por curso
-			case 'proyecto_curso':
-				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.codigo, c.nombre  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
-				$this->modelo->conectar();
-				$respuesta1 = $this->modelo->consultar($consulta1);
-				$this->modelo->desconectar();
-
-				$lista = '<thead>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                        	</thead>
-                        	<tfoot>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                        	</tfoot>
-                        	<tbody>';
-				while ($row = mysqli_fetch_array($respuesta1)) {
-					$lista .= '
-                                
-									<tr>
-				                        <td>'.$row['nombre'].'</td>
-				                        <td>'.$row['descripcion'].'</td>
-				                        <td>'.$row['estado'].'</td>
-				                        <td>'.$row['codigo'].'</td>
-				                        <td>'.$row['nombre'].'</td>
-				                        <td> A </td>
-			                        </tr>';
-				}
-				$lista.='</tbody>';
-				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
-				$replace = '<thead>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </thead>
-                            <tfoot>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </tfoot>
-                            <tbody>
-
-                            </tbody>';
-				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
-
-				$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-
-				$this->modelo->conectar();
-				$respuesta1 = $this->modelo->consultar($consulta1);
-				$this->modelo->desconectar();
-
-				$nombre = '';
-				$correo = '';
-				while ($row = mysqli_fetch_array($respuesta1)) {
-					$nombre = $row['nombre'];
-					$correo = $row['correo'];
-				}
-
-				$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-				$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-				$this->mostrarVista($plantilla);
-				break;
-
-			//proyectos por semestre
-			case 'proyecto_semestre':
-				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.codigo, c.nombre  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
-				$this->modelo->conectar();
-				$respuesta1 = $this->modelo->consultar($consulta1);
-				$this->modelo->desconectar();
-
-				$lista = '<thead>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Semestre</th>
-                            </tr>
-                        	</thead>
-                        	<tfoot>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Semestre</th>
-                            </tr>
-                        	</tfoot>
-                        	<tbody>';
-				while ($row = mysqli_fetch_array($respuesta1)) {
-					$lista .= '
-                                
-									<tr>
-				                        <td>'.$row['nombre'].'</td>
-				                        <td>'.$row['descripcion'].'</td>
-				                        <td>'.$row['estado'].'</td>
-				                        <td>'.$row['codigo'].'</td>
-				                        <td>'.$row['nombre'].'</td>
-				                        <td> 2017 </td>
-			                        </tr>';
-				}
-				$lista.='</tbody>';
-				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
-				$replace = '<thead>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </thead>
-                            <tfoot>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </tfoot>
-                            <tbody>
-
-                            </tbody>';
-				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
-
-				$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-
-				$this->modelo->conectar();
-				$respuesta1 = $this->modelo->consultar($consulta1);
-				$this->modelo->desconectar();
-
-				$nombre = '';
-				$correo = '';
-				while ($row = mysqli_fetch_array($respuesta1)) {
-					$nombre = $row['nombre'];
-					$correo = $row['correo'];
-				}
-
-				$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-				$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-				$this->mostrarVista($plantilla);
-				break;
-
-			//proyectos sin terminar
-			case 'proyectos_sin_terminar':
-
-				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.codigo, c.nombre  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
-				$this->modelo->conectar();
-				$respuesta1 = $this->modelo->consultar($consulta1);
-				$this->modelo->desconectar();
-
-				$lista = '<thead>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                        	</thead>
-                        	<tfoot>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                        	</tfoot>
-                        	<tbody>';
-				while ($row = mysqli_fetch_array($respuesta1)) {
-					$lista .= '
-                                
-									<tr>
-				                        <td>'.$row['nombre'].'</td>
-				                        <td>'.$row['descripcion'].'</td>
-				                        <td>'.$row['estado'].'</td>
-				                        <td>'.$row['codigo'].'</td>
-				                        <td>'.$row['nombre'].'</td>
-				                        <td> A </td>
-			                        </tr>';
-				}
-				$lista.='</tbody>';
-				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
-				$replace = '<thead>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </thead>
-                            <tfoot>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </tfoot>
-                            <tbody>
-
-                            </tbody>';
-				
-				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
-
-				$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-
-				$this->modelo->conectar();
-				$respuesta1 = $this->modelo->consultar($consulta1);
-				$this->modelo->desconectar();
-
-				$nombre = '';
-				$correo = '';
-				while ($row = mysqli_fetch_array($respuesta1)) {
-					$nombre = $row['nombre'];
-					$correo = $row['correo'];
-				}
-
-				$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-				$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-				$this->mostrarVista($plantilla);
-
-				break;
-
-			case 'proyectos_todos':
-
-				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.codigo, c.nombre  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
-				$this->modelo->conectar();
-				$respuesta1 = $this->modelo->consultar($consulta1);
-				$this->modelo->desconectar();
-
-				$lista = '<thead>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                        	</thead>
-                        	<tfoot>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                        	</tfoot>
-                        	<tbody>';
-				while ($row = mysqli_fetch_array($respuesta1)) {
-					$lista .= '
-                                
-									<tr>
-				                        <td>'.$row['nombre'].'</td>
-				                        <td>'.$row['descripcion'].'</td>
-				                        <td>'.$row['estado'].'</td>
-				                        <td>'.$row['codigo'].'</td>
-				                        <td>'.$row['nombre'].'</td>
-				                        <td> A </td>
-			                        </tr>';
-				}
-				$lista.='</tbody>';
-				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
-				$replace = '<thead>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </thead>
-                            <tfoot>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </tfoot>
-                            <tbody>
-
-                            </tbody>';
-				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
-
-				$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-
-				$this->modelo->conectar();
-				$respuesta1 = $this->modelo->consultar($consulta1);
-				$this->modelo->desconectar();
-
-				$nombre = '';
-				$correo = '';
-				while ($row = mysqli_fetch_array($respuesta1)) {
-					$nombre = $row['nombre'];
-					$correo = $row['correo'];
-				}
-
-				$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-				$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-				$this->mostrarVista($plantilla);
-				break;
-
-			case 'curso_semestre':
-				$consulta1 = "SELECT c.codigo, c.nombre  FROM curso c";
-				$this->modelo->conectar();
-				$respuesta1 = $this->modelo->consultar($consulta1);
-				$this->modelo->desconectar();
-
-				$lista = '<thead>
-                            <tr>
-                                <th>Nombre curso</th>
-                                <th>Descripcion</th>
-                                <th>A&nacute;o</th>
-                                <th>Periodo</th>
-                                <th>Grupo</th>
-                                <th>Semestre</th>
-                            </tr>
-                        	</thead>
-                        	<tfoot>
-                            <tr>
-                                <th>Nombre curso</th>
-                                <th>Descripcion</th>
-                                <th>A&nacute;o</th>
-                                <th>Periodo</th>
-                                <th>Grupo</th>
-                                <th>Semestre</th>
-                            </tr>
-                        	</tfoot>
-                        	<tbody>';
-				while ($row = mysqli_fetch_array($respuesta1)) {
-					$lista .= '
-                                
-									<tr>
-				                        <td>'.$row['codigo'].'</td>
-				                        <td>'.$row['nombre'].'</td>
-				                        <td> 2017 </td>
-				                        <td> I </td>
-				                        <td> A </td>
-				                        <td> Actual </td>
-			                        </tr>';
-				}
-				$lista.='</tbody>';
-				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
-				$replace = '<thead>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </thead>
-                            <tfoot>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </tfoot>
-                            <tbody>
-
-                            </tbody>';
-				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
-
-				$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-
-				$this->modelo->conectar();
-				$respuesta1 = $this->modelo->consultar($consulta1);
-				$this->modelo->desconectar();
-
-				$nombre = '';
-				$correo = '';
-				while ($row = mysqli_fetch_array($respuesta1)) {
-					$nombre = $row['nombre'];
-					$correo = $row['correo'];
-				}
-
-				$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-				$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-				$this->mostrarVista($plantilla);
-				break;
-
-			case 'docentes_semestre':
-				$consulta1 = "SELECT d.nombre, d.correo, d.telefono FROM docente d";
-				$this->modelo->conectar();
-				$respuesta1 = $this->modelo->consultar($consulta1);
-				$this->modelo->desconectar();
-
-				$lista = '<thead>
-                            <tr>
-                                <th>Nombre docente</th>
-                                <th>Correo docente</th>
-                                <th>Telefono</th>
-                                <th>A&nacute;o</th>
-                                <th>Periodo</th>
-                                <th>Semestre</th>
-                            </tr>
-                        	</thead>
-                        	<tfoot>
-                            <tr>
-                                <th>Nombre docente</th>
-                                <th>Correo docente</th>
-                                <th>Telefono</th>
-                                <th>A&nacute;o</th>
-                                <th>Periodo</th>
-                                <th>Semestre</th>
-                            </tr>
-                        	</tfoot>
-                        	<tbody>';
-				while ($row = mysqli_fetch_array($respuesta1)) {
-					$lista .= '
-                                
-									<tr>
-				                        <td>'.$row['nombre'].'</td>
-				                        <td>'.$row['correo'].'</td>
-				                        <td>'.$row['telefono'].'</td>
-				                        <td> 2017 </td>
-				                        <td> I </td>
-				                        <td> Actual </td>
-			                        </tr>';
-				}
-				$lista.='</tbody>';
-				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
-				$replace = '<thead>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </thead>
-                            <tfoot>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </tfoot>
-                            <tbody>
-
-                            </tbody>';
-				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
-
-				$consulta1 = "SELECT nombre, correo FROM docente WHERE id_docente = ".$_SESSION['admin']."";
-
-				$this->modelo->conectar();
-				$respuesta1 = $this->modelo->consultar($consulta1);
-				$this->modelo->desconectar();
-
-				$nombre = '';
-				$correo = '';
-				while ($row = mysqli_fetch_array($respuesta1)) {
-					$nombre = $row['nombre'];
-					$correo = $row['correo'];
-				}
-
-				$plantilla = $this->reemplazar( $plantilla, '{{nombre}}', $nombre);
-				$plantilla = $this->reemplazar( $plantilla, '{{correo}}', $correo);
-
-				
-				$this->mostrarVista($plantilla);
-				break;
-		}
-	}
-
-
-	public function invitarDocente($email){
-
-		
-		/*
-				//funcion mail simple 
-				$mail = "Lo invitamos a formar parte de Project Manager";
-				//Titulo
-				$titulo = "Project Manager UFPS";
-				//cabecera
-				$headers = "MIME-Version: 1.0\r\n"; 
-				$headers .= "Content-type: text/html; charset=iso-8859-1\r\n"; 
-				//dirección del remitente 
-				$headers .= "From: ProjectManagerTeam <".$email.">\r\n";
-				//Enviamos el mensaje a tu_dirección_email 
-				$bool = mail($email,$titulo,$mail,$headers);
-				if($bool){
-					echo'<script type="text/javascript">
-					alert("Enviado Correctamente");
-					</script>'; 
-				}else{
-					echo'<script type="text/javascript">
-					alert("NO ENVIADO, intentar de nuevo");
-					</script>';
-				}
-		*/		
-
-		
-		//funcion para enviar correo con la libreria PHPMailer
-		$mail = new PHPMailer();
-
-		//Luego tenemos que iniciar la validación por SMTP:
-		$mail->IsSMTP();
-		$mail->SMTPAuth = true;
-		$mail->SMTPSecure = 'tls';
-		$mail->SMTPDebug = 4;
-		$mail->Host = "smtp.gmailcom"; // A RELLENAR. Aquí pondremos el SMTP a utilizar. Por ej. mail.midominio.com
-		$mail->Username = "brayamalbertoma@ufps.edu.co"; // A RELLENAR. Email de la cuenta de correo. ej.info@midominio.com La cuenta de correo debe ser creada previamente. 
-		$mail->Password = "Elvira22*"; // A RELLENAR. Aqui pondremos la contraseña de la cuenta de correo
-		$mail->Port = 587; // Puerto de conexión al servidor de envio. 
-		$mail->From = "brayamalbertoma@ufps.edu.co"; // A RELLENARDesde donde enviamos (Para mostrar). Puede ser el mismo que el email creado previamente.
-		$mail->FromName = "Projec Manager UFPS"; //A RELLENAR Nombre a mostrar del remitente. 
-		$mail->AddAddress( $email ); // Esta es la dirección a donde enviamos 
-		$mail->IsHTML(true); // El correo se envía como HTML 
-		$mail->Subject = "Invitacion Project Manager"; // Este es el titulo del email. 
-		$body = "Buen dia docente."; 
-		$body .= "Lo invitamos a formar parte de la plataforma de administracion de projectos: <br> <b>Project Manager</b>"; 
-		$mail->Body = $body; // Mensaje a enviar. 
-		$exito = $mail->Send(); // Envía el correo.
-		if($exito){ 
-			echo'<script type="text/javascript">
-            alert("Enviado Correctamente");
-         	</script>'; 
-		}else{ 
-			echo'<script type="text/javascript">
-            alert("NO ENVIADO, intentar de nuevo");
-         	</script>';
-         	echo $mail->ErrorInfo; 
-		} 
-		
-		
-		header('Location: index.php');
-	}
-
+	
+	/**
+	 * Regsitra un estudiante y confirma si el registro fue fallido o exitoso
+	 * @param String $nombre
+	 * @param String $telefono
+	 * @param String $correo
+	 * @param String $password
+	 * @param String $confirm
+	 * @return void
+	 */
 	public function registrarEstudiante($nombre, $telefono, $correo, $password, $confirm){
-
-
+		
+		
 		//Busco todas las personas para hacer la comprobacion si ya existe o no en la base de datos 	
 		$consulta1 = "SELECT COUNT(correo) FROM estudiante  WHERE correo = '".$correo."'";
 		$resultado;
@@ -1643,10 +1508,9 @@ class controladorInicio extends controlador{
 		$resultado=$this->modelo->consultar($consulta1);
 		$this->modelo->desconectar();
 
-
 		$row = mysqli_fetch_array($resultado);
 		
-	 	//Si la consulta no me arrojo resultados, quiere decir que la persona no existe, entonces la agrego a la bd
+		//Si la consulta no me arrojo resultados, quiere decir que la persona no existe, entonces la agrego a la bd
 		if($row[0] == 0){
 
 			$passh= password_hash($password, PASSWORD_DEFAULT);
@@ -1655,71 +1519,15 @@ class controladorInicio extends controlador{
 			$this->modelo->conectar();
 			$this->modelo->consultar($consulta2);
 			$this->modelo->desconectar();
-
-			
-	 	 	//Guardo un mensaje para ser mostrado al registrar el usuario
-			echo'<script type="text/javascript">
-            		alert("Registro exitoso.");
-         		</script>';
-			header('Location: index.php');
+	
+			//Guardo un mensaje para ser mostrado al registrar el proyecto
+			$this->mostrarMensaje("Registro exitoso.");	
 
 		}else{
-
-	 	 	//Si el usuario ya esta registrado muestre la vista de registro
-			echo'<script type="text/javascript">
-            		alert("Registro fallido: Usuario ya existe.");
-         		</script>';
-			header('Location: index.php');
+			//Si el usuario ya esta registrado muestre la vista de registro	
+			$this->mostrarMensaje("Registro fallido: Usuario ya existe.");	
 		}
 	}
-
-
-	//Eliminar Docente
-
-	public function eliminarDocente() {
-		if(isset($_POST['docente'])) {
-			$id_docente = $_POST['id'];
-			$consulta1 = "DELETE FROM docente WHERE id_docente = $id_docente";
-			$this->modelo->conectar();
-			$resultado=$this->modelo->consultar($consulta1);
-			$this->modelo->desconectar();
-
-			echo json_encode( array('response' => 1) );
-		}
-	}
-
-	//Eliminar Curso
-
-	public function eliminarCurso() {
-		if(isset($_POST['curso'])) {
-			$id_curso = $_POST['id'];
-			$consulta1 = "DELETE FROM curso WHERE id_curso = $id_curso";
-			$this->modelo->conectar();
-			$resultado=$this->modelo->consultar($consulta1);
-			$this->modelo->desconectar();
-
-			echo json_encode( array('response' => 1) );
-		}
-	}
-
-
-
-	//Eliminar Proyecto
-
-	public function eliminarProyecto() {
-		if(isset($_POST['proyecto'])) {
-			$id_proyecto = $_POST['id'];
-			$consulta1 = "DELETE FROM proyecto WHERE id_proyecto = $id_proyecto";
-			$this->modelo->conectar();
-			$resultado=$this->modelo->consultar($consulta1);
-			$this->modelo->desconectar();
-
-			echo json_encode( array('response' => 1) );
-		}
-	}
- 
-
-
 
 	/*************************************************************************************************
 	 ***********************    METODOS PRIVADOS   **************************************************
@@ -1728,9 +1536,11 @@ class controladorInicio extends controlador{
 
 	/**
 	* Monto en la plantilla los datos de nombre y correo que siempre se muestran
-	* @return la plantilla modificada
+	* @param String $plantilla
+	* @param String $tipoUser
+	* @param int $id
+	* @return String la plantilla modificada
 	*/
-	
 	private function montarDatos($plantilla, $tipoUser, $id){
 
 		if(($tipoUser == 'admin') || ($tipoUser == 'docente')){
@@ -1761,7 +1571,8 @@ class controladorInicio extends controlador{
 
 	/**
 	* Monto en la plantilla los datos calculados de las tarjetas
-	* @return la plantilla modificada
+	* @param String $plantilla
+	* @return String plantilla modificada
 	*/
 	private function calcularTarjetas($plantilla){
 
@@ -1876,5 +1687,17 @@ class controladorInicio extends controlador{
 		$nuevaPlantilla = $this->reemplazar( $nuevaPlantilla, '{{alumnos}}', $alumnos);
 
 		return $nuevaPlantilla;
+	}
+
+	/**
+	* Muestro los mensajes 
+	* @param String $mensaje
+	*/
+	private function mostrarMensaje($mensaje){
+
+		echo'<script type="text/javascript">
+		alert("'.$mensaje.'");
+		window.location.href = "index.php";
+	 	</script>';
 	}
 }
