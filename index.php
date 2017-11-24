@@ -188,63 +188,88 @@
 	*/
 
 
-
+	//si hay una solicitud por el metodo post
 	if(isset($_POST['solicitudes'])){
 
 		//Guardo el valor de la variable solicitudes
 		$tipo = $_POST['solicitudes'];
 		
-		//Si la solicitud es para iniciar sesion, guardamos los datos de sesion 
-		if($tipo == "login"){
+		//si hay una solicitud en la sesion admin
+		if(isset($_SESSION['admin'])){
+
+			if($tipo == "invitar_docente"){
+				$controladorInicio->invitarDocente($_POST['email'] );	
+			}
+
+			if($tipo == "modificar_docente"){
+				$controladorInicio->modificarDocente($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password'], $_POST['id']);
+			}
 			
-			$controladorInicio->guardarLogin($_POST['correo'], $_POST['contrasena']);
-		}
-
-		if($tipo == "registrar_docente"){
-			$controladorInicio->guardarDocente($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password']);
-		}
+			if($tipo == "modificar_curso"){
+				$controladorInicio->modificarCurso($_POST['nombre'], $_POST['descripcion'], $_POST['id']);
+			}
 	
-		if($tipo == "modificar_docente"){
-			$controladorInicio->modificarDocente($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password'], $_POST['id']);
-		}
-		
-		if($tipo == "modificar_curso"){
-			$controladorInicio->modificarCurso($_POST['nombre'], $_POST['descripcion'], $_POST['id']);
+			if($tipo == "agregar_admin"){
+				$controladorInicio->agregarAdmin($_POST['docente']);
+			}
+	
+			if($tipo == "registrar_curso"){
+				$controladorInicio->registrarCurso($_POST['codigo'], $_POST['nombre']);
+			}
+
+			if($tipo == "generar_reportes"){
+				$controladorInicio->generarReportes($_POST['reporte'] );	
+			}
+
+			if($tipo == "inscribir_curso"){
+				$controladorInicio->inscribirCurso($_POST['curso'], 'a');	
+			}
+
+			if($tipo == "registrar_proyecto"){
+				$controladorInicio->registrarProyecto('a', $_POST['curso'], $_POST['nombre'], $_POST['url_app'], $_POST['url_codigo'], $_POST['descripcion'] );	
+			}
+
+			if($tipo == "modificar_proyecto"){
+				$controladorInicio->modificarProyecto($_POST['curso'], $_POST['nombre'], $_POST['url_app'], $_POST['url_codigo'], $_POST['descripcion'], $_POST['id_proyecto'] );	
+			}
+
+		}else{//si hay una solicitud en la sesion docente
+
+			if(isset($_SESSION['docente'])){
+
+				if($tipo == "inscribir_curso"){
+					$controladorInicio->inscribirCurso($_POST['curso'], 'd');	
+				}
+
+				if($tipo == "registrar_proyecto"){
+					$controladorInicio->registrarProyecto('d', $_POST['curso'], $_POST['nombre'], $_POST['url_app'], $_POST['url_codigo'], $_POST['descripcion'] );	
+				}
+			}else{//si hay una solicitud en la sesion estudiante
+
+				if(isset($_SESSION['estudiante'])){
+
+					if($tipo == "inscribir_curso"){
+						$controladorInicio->inscribirCurso($_POST['curso'], 'e');	
+					}
+				}else{//si hay una solicitud sin iniciar una sesion
+
+					//Si la solicitud es para iniciar sesion, guardamos los datos de sesion 
+					if($tipo == "login"){
+						
+						$controladorInicio->guardarLogin($_POST['correo'], $_POST['contrasena']);
+					}
+					
+					if($tipo == "registrar_docente"){
+						$controladorInicio->guardarDocente($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password']);
+					}
+
+					if($tipo == "registro_estudiante"){
+						$controladorInicio->registrarEstudiante($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password'], $_POST['confirm']);
+					}
+				}
+			}
 		}
 
-		if($tipo == "agregar_admin"){
-			$controladorInicio->agregarAdmin($_POST['docente']);
-		}
-
-		if($tipo == "registrar_curso"){
-			$controladorInicio->registrarCurso($_POST['codigo'], $_POST['nombre
-			']);
-		}
-
-		if($tipo == "inscribir_curso_a"){
-			$controladorInicio->inscribirCurso($_POST['curso'], 'a');	
-		}
-
-		if($tipo == "registrar_proyecto_a"){
-			$controladorInicio->registrarProyecto('a', $_POST['curso'], $_POST['nombre'], $_POST['url_app'], $_POST['url_codigo'], $_POST['descripcion'] );	
-		}
-
-		if($tipo == "modificar_proyecto_a"){
-			$controladorInicio->modificarProyecto($_POST['curso'], $_POST['nombre'], $_POST['url_app'], $_POST['url_codigo'], $_POST['descripcion'], $_POST['id_proyecto'] );	
-		}
-
-		if($tipo == "generar_reportes"){
-			$controladorInicio->generarReportes($_POST['reporte'] );	
-		}
-
-		if($tipo == "invitar_docente"){
-			$controladorInicio->invitarDocente($_POST['email'] );	
-		}
-
-		if($tipo == "registro_estudiante"){
-			$controladorInicio->registrarEstudiante($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password'], $_POST['confirm']);
-		}
-		
 		exit();
 	}
 	

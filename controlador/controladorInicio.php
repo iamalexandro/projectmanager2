@@ -388,7 +388,7 @@ class controladorInicio extends controlador{
 		
 		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/listado_cursos.html');
 		
-		$cursos = "SELECT codigo, nombre, id_curso FROM curso";
+		$cursos = "SELECT codigo, nombre, grupo, id_curso FROM curso ORDER BY nombre";
 		$id = $_SESSION['admin'];
 		$is_admin = "SELECT COUNT(*) as exist FROM administrador WHERE id_docente = $id";
 		
@@ -410,6 +410,7 @@ class controladorInicio extends controlador{
 		while ($row = mysqli_fetch_array($cursos)) {
 			$codigo_curso = $row['codigo'];
 			$nombre_curso = $row['nombre'];
+			$grupo_curso = $row['grupo'];
 			$id_curso = $row['id_curso'];
 			$nombre_curso_string = '"'.$nombre_curso.'"';
 			$listado .= "
@@ -419,6 +420,9 @@ class controladorInicio extends controlador{
 					</td>
 					<td>
 						$nombre_curso
+					</td>
+					<td class='text-center'>
+						$grupo_curso
 					</td>
 					<td class='text-center'>
 						<a href='index.php?boton=modificar_curso&id=$id_curso' class='btn btn-sm bg-blue waves-effect'>Editar</a>
@@ -512,34 +516,80 @@ class controladorInicio extends controlador{
 	*/
 	public function mostrarFormInscribirCurso($letra){
 		
+		$id;
+
 		if($letra == 'a'){
 
+			$id = $_SESSION['admin'];
 			$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/inscribirse_a_curso_admin.html');
-			$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
-
+			$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $id);
 		}else{
 			if($letra == 'd'){
+
+				$id = $_SESSION['docente'];
 				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/inscribirse_a_curso_docente.html');
-				$plantillaConDatos = $this->montarDatos($plantilla, 'docente', $_SESSION['docente']);
+				$plantillaConDatos = $this->montarDatos($plantilla, 'docente', $id);
 			}else{
 				if($letra = 'e'){
+
+					$id = $_SESSION['estudiante'];
 					$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/inscribirse_a_curso_estudiante.html');
-					$plantillaConDatos = $this->montarDatos($plantilla, 'estudiante', $_SESSION['estudiante']);
+					$plantillaConDatos = $this->montarDatos($plantilla, 'estudiante', $id);
 				}
 			}
 		}
 
-		$consulta1 = "SELECT * FROM curso";
+		if(isset($_SESSION['admin']) || isset($_SESSION['docente'])){
+
+			$consulta1 = "SELECT c.id_curso, c.codigo, c.nombre, c.grupo FROM curso c WHERE c.id_curso NOT IN (SELECT cd.id_curso FROM curso_docente cd WHERE cd.id_docente = ".$id.")";
+
+			$consulta2 = "SELECT c.id_curso, c.codigo, c.nombre, c.grupo FROM curso c WHERE c.id_curso IN (SELECT cd.id_curso FROM curso_docente cd WHERE cd.id_docente = ".$id.")";
+
+		}else{
+			if(isset($_SESSION['estudiante'])){
+				$consulta1 = "SELECT c.id_curso, c.codigo, c.nombre, c.grupo FROM curso c WHERE c.id_curso NOT IN (SELECT ce.id_curso FROM curso_estudiante ce WHERE ce.id_estudiante = ".$id.")";
+
+				$consulta2 = "SELECT c.id_curso, c.codigo, c.nombre, c.grupo FROM curso c WHERE c.id_curso IN (SELECT ce.id_curso FROM curso_estudiante ce WHERE ce.id_estudiante = ".$id.")";
+			}
+		}
 
 		$this->modelo->conectar();
 		$respuesta1 = $this->modelo->consultar($consulta1);
+		$respuesta2 = $this->modelo->consultar($consulta2);
 		$this->modelo->desconectar();
 
+		//muestro el option select con los cursos en los que se puede inscribir la persona
 		$lista = '';
 		while ($row = mysqli_fetch_array($respuesta1)) {
-			$lista .= '<option value="'.$row['id_curso'].'" >'.$row['codigo'].' - '.$row['nombre'].'</option>';
+			$lista .= '<option name = "curso" value ="'.$row['id_curso'].'" >'.$row['codigo'].' - '.$row['nombre'].' - '.$row['grupo'].'</option>';
 		}
 
+		//muestro el listado de cursos donde está inscrita la persona
+		$listado = '';
+		while ($row = mysqli_fetch_array($respuesta2)) {
+			$codigo_curso = $row['codigo'];
+			$nombre_curso = $row['nombre'];
+			$grupo_curso = $row['grupo'];
+			$id_curso = $row['id_curso'];
+			$nombre_curso_string = '"'.$nombre_curso.'"';
+			$listado .= "
+				<tr>
+					<td>
+						$codigo_curso
+					</td>
+					<td>
+						$nombre_curso
+					</td>
+					<td class='text-center'>
+						$grupo_curso
+					</td>
+					<td class='text-center'>
+						<button type='button' class='btn btn-sm bg-red waves-effect' onclick='salirCurso($id_curso, $nombre_curso_string);'>Salir</button>
+					</td>
+				</tr>";
+		}
+
+		$plantillaConDatos = $this->reemplazar( $plantillaConDatos, '{{listado_cursos}}', $listado);
 		$plantillaConDatos = $this->reemplazar( $plantillaConDatos, '{{lista_cursos}}', $lista);
 		$this->mostrarVista($plantillaConDatos);	
 	}
@@ -611,7 +661,7 @@ class controladorInicio extends controlador{
 	*/
 	public function mostrarFormMisProyectos(){
 		
-		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/mis_proyectos.html');
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/mis_proyectos_estudiante.html');
 		
 		$plantillaConDatos = $this->montarDatos($plantilla, 'estudiante', $_SESSION['estudiante']); 
 		
@@ -856,7 +906,10 @@ class controladorInicio extends controlador{
 	 */
 	public function registrarCurso($codigo, $nombre){
 
-		$consulta1 = "INSERT INTO curso VALUES( null, '".$codigo."', '".$nombre."')";
+
+		$grupo = $this->consultarGrupo($codigo);
+		$consulta1 = "INSERT INTO curso VALUES( null, '".$codigo."', '".$nombre."', '".$grupo."')";
+		echo $codigo.$nombre.$grupo;
 		$this->modelo->conectar();
 		$this->modelo->consultar($consulta1);
 		$this->modelo->desconectar();
@@ -1362,18 +1415,24 @@ class controladorInicio extends controlador{
 	 * @return void
 	 */
 	public function inscribirCurso($curso, $letra){
+		
+		$anio = date("Y");
+		$periodo = $this->consultarPeriodo();
 
+		//si es admin
 		if($letra == 'a'){
 
-			$consulta1 = "INSERT INTO curso_docente VALUES( null, ".$curso.", ".$_SESSION['admin'].", 'A', 2017, 2)";
+			$consulta1 = "INSERT INTO curso_docente VALUES( null, ".$curso.", ".$_SESSION['admin'].", ".$anio.", ".$periodo.")";
 		}else{
+			//si es docente
 			if($letra == 'd'){
 				
-				$consulta1 = "INSERT INTO curso_docente VALUES( null, ".$curso.", ".$_SESSION['docente'].", 'A', 2017, 2)";
+				$consulta1 = "INSERT INTO curso_docente VALUES( null, ".$curso.", ".$_SESSION['docente'].",  ".$anio.", ".$periodo.")";
 			}else{
+				//si es estudiante
 				if($letra == 'e'){
 					
-					$consulta1 = "INSERT INTO curso_estudiante VALUES( null, ".$curso.", ".$_SESSION['estudiante'].", 'A', 2017, 2)";
+					$consulta1 = "INSERT INTO curso_estudiante VALUES( null, ".$curso.", ".$_SESSION['estudiante'].", ".$anio.", ".$periodo.")";
 				}
 			}
 		}
@@ -1503,7 +1562,7 @@ class controladorInicio extends controlador{
 		
 		//Busco todas las personas para hacer la comprobacion si ya existe o no en la base de datos 	
 		$consulta1 = "SELECT COUNT(correo) FROM estudiante  WHERE correo = '".$correo."'";
-		$resultado;
+
 		$this->modelo->conectar();
 		$resultado=$this->modelo->consultar($consulta1);
 		$this->modelo->desconectar();
@@ -1699,5 +1758,47 @@ class controladorInicio extends controlador{
 		alert("'.$mensaje.'");
 		window.location.href = "index.php";
 	 	</script>';
+	}
+
+	/**
+	* Retorna una letra para un grupo A, B, C... etc.
+	* @param String $codigo
+	*/
+	private function consultarGrupo($codigo){
+
+		$consulta1 = "SELECT count(codigo) FROM curso";
+		
+		$this->modelo->conectar();
+		$respuesta1 = $this->modelo->consultar($consulta1);
+		$this->modelo->desconectar();
+
+		$cantGrupos = mysqli_num_rows($respuesta1);
+
+		if($cantGrupos != 0){
+
+			$consulta2 = "SELECT grupo FROM curso WHERE codigo = ".$codigo." ORDER BY grupo DESC";
+			
+			$this->modelo->conectar();
+			$respuesta2 = $this->modelo->consultar($consulta2);
+			$this->modelo->desconectar();
+
+			$grupo = mysqli_fetch_row($respuesta2);
+
+			$letra_ascii = ord($grupo[0]);
+			$letra_ascii +=1 ;
+			$letra_char = ($letra_ascii >= 65 && $letra_ascii < 90) ? chr($letra_ascii) : "AA";
+
+			return $letra_char;
+		}else{
+			return "A";
+		}
+	}
+
+
+	private function consultarPeriodo(){
+
+		$mes = date("m");
+
+		return ($mes <=6) ? 1 : 2;
 	}
 }
