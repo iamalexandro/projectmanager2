@@ -3,11 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <title>Project Manager - UFPS</title>
     <!-- Favicon-->
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="recursos/favicon.ico" type="image/x-icon">
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext" rel="stylesheet" type="text/css">
@@ -22,8 +21,15 @@
     <!-- Animation Css -->
     <link href="recursos/plugins/animate-css/animate.css" rel="stylesheet" />
 
-    <!-- Morris Chart Css-->
-    <link href="recursos/plugins/morrisjs/morris.css" rel="stylesheet" />
+    <!-- Bootstrap Material Datetime Picker Css -->
+    <link href="recursos/plugins/bootstrap-material-datetimepicker/css/bootstrap-material-datetimepicker.css" rel="stylesheet"
+    />
+
+    <!-- Wait Me Css -->
+    <link href="recursos/plugins/waitme/waitMe.css" rel="stylesheet" />
+
+    <!-- Bootstrap Select Css -->
+    <link href="recursos/plugins/bootstrap-select/css/bootstrap-select.css" rel="stylesheet" />
 
     <!-- Custom Css -->
     <link href="recursos/css/style.css" rel="stylesheet">
@@ -46,15 +52,14 @@
                     </div>
                 </div>
             </div>
-            <p>Por favor espere...</p>
+            <p>Please wait...</p>
         </div>
     </div>
     <!-- #END# Page Loader -->
     <!-- Overlay For Sidebars -->
     <div class="overlay"></div>
     <!-- #END# Overlay For Sidebars -->
-    <!-- #END# Search Bar -->
-    <!-- Top Bar -->
+    <!-- Search Bar -->
     <nav class="navbar">
         <div class="container-fluid">
             <div class="navbar-header">
@@ -68,7 +73,7 @@
                     <li><a href="index.php?boton=logoute" class="js-search" data-close="true"><i class="material-icons">power_settings_new</i></a></li>
                 </ul>
             </div>
-            </div>
+        </div>
         </div>
     </nav>
     <!-- #Top Bar -->
@@ -80,7 +85,7 @@
                 <div class="info-container">
                     <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{nombre}}</div>
                     <div class="email">{{correo}}</div>
-                  
+
                 </div>
             </div>
             <!-- #User Info -->
@@ -103,10 +108,11 @@
                     <li>
                         <a href="index.php?boton=mis_proyectos">
                             <i class="material-icons">folder_shared</i>
-                            <span>Mis proyectos</span>
+                            <span>Mis Proyectos</span>
                         </a>
                     </li>
-                </ul>  
+                    
+                </ul>
             </div>
             <!-- #Menu -->
             <!-- Footer -->
@@ -123,16 +129,39 @@
         <!-- #END# Left Sidebar -->
         <!-- #END# Right Sidebar -->
     </section>
-
     <section class="content">
         <div class="container-fluid">
-            <div class="block-header">
-                <h2>DASHBOARD</h2>
+            <div class="row">
+                <div class="block-header">
+                    <h2>LISTADO DE CURSOS</h2>
+                </div>
             </div>
-
-
-            <div class="card">
-                
+            <div class="row">
+                <div class="col-lg-4">
+                        <a href="index.php?boton=inscribir_curso" class="btn btn-sm bg-green waves-effect'">Inscribirse a curso</a>
+                </div>
+                <br>
+            </div>
+            <div class="row clearfix">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="body">
+                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">             
+                               <thead>
+                                <tr>
+                                    <th>Codigo</th>
+                                    <th>Nombre</th>
+                                    <th class='text-center'>Grupo</th>
+                                    <th class='text-center'>Acciones</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    {{listado_cursos}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -152,32 +181,36 @@
     <!-- Waves Effect Plugin Js -->
     <script src="recursos/plugins/node-waves/waves.js"></script>
 
-    <!-- Jquery CountTo Plugin Js -->
-    <script src="recursos/plugins/jquery-countto/jquery.countTo.js"></script>
+    <!-- Autosize Plugin Js -->
+    <script src="recursos/plugins/autosize/autosize.js"></script>
 
-    <!-- Morris Plugin Js -->
-    <script src="recursos/plugins/raphael/raphael.min.js"></script>
-    <script src="recursos/plugins/morrisjs/morris.js"></script>
+    <!-- Moment Plugin Js -->
+    <script src="recursos/plugins/momentjs/moment.js"></script>
 
-    <!-- ChartJs -->
-    <script src="recursos/plugins/chartjs/Chart.bundle.js"></script>
-
-    <!-- Flot Charts Plugin Js -->
-    <script src="recursos/plugins/flot-charts/jquery.flot.js"></script>
-    <script src="recursos/plugins/flot-charts/jquery.flot.resize.js"></script>
-    <script src="recursos/plugins/flot-charts/jquery.flot.pie.js"></script>
-    <script src="recursos/plugins/flot-charts/jquery.flot.categories.js"></script>
-    <script src="recursos/plugins/flot-charts/jquery.flot.time.js"></script>
-
-    <!-- Sparkline Chart Plugin Js -->
-    <script src="recursos/plugins/jquery-sparkline/jquery.sparkline.js"></script>
+    <!-- Bootstrap Material Datetime Picker Plugin Js -->
+    <script src="recursos/plugins/bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker.js"></script>
 
     <!-- Custom Js -->
     <script src="recursos/js/admin.js"></script>
-    <script src="recursos/js/pages/index.js"></script>
+    <script src="recursos/js/pages/forms/basic-form-elements.js"></script>
 
     <!-- Demo Js -->
     <script src="recursos/js/demo.js"></script>
+
+    <script>
+            function borrarCurso( id_curso, nombre ) {
+                if( confirm( '¿Desea eliminar el curso '+ nombre+'?' ) ) {
+                    $.ajax({
+                        type: "POST",
+                        url: "index.php",
+                        data: {curso: true, id: id_curso},
+                        dataType: "json",
+                        async: false
+                    });
+                    window.location.href='index.php?boton=listado_cursos';
+                }
+            }
+        </script>
 </body>
 
 </html>

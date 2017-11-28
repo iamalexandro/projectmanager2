@@ -136,17 +136,12 @@ class controladorInicio extends controlador{
 	*/ 
 	public function mostrarFormListadoProyectos(){
 		
-		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/listado_proyectos.html');
 		$proyectos = false;
 		if( isset($_SESSION['admin']) || isset($_SESSION['docente']) ) {
 			$id = isset($_SESSION['admin']) ? $_SESSION['admin'] : $_SESSION['docente'];
+			$user = isset($_SESSION['admin']) ? 'admin' : 'docente';			
 			$proyectos = "SELECT * FROM proyecto WHERE id_docente = $id";
 		}
-		else if( isset($_SESSION['estudiante']) ) {
-			$id = $_SESSION['estudiante'];
-			$proyectos = "SELECT * FROM proyecto WHERE id_estudiante = $id";
-		}
-
 		if( !$proyectos ) {
 			//exit();
 		}
@@ -204,8 +199,9 @@ class controladorInicio extends controlador{
 
 		}
 		
+		$plantilla = isset($_SESSION['admin']) ? $this->leerPlantilla(__DIR__ . '/../vista/listado_proyectos_admin.html') : $this->leerPlantilla(__DIR__ . '/../vista/listado_proyectos_docente.html');
 		$plantilla = $this->reemplazar( $plantilla, '{{listado_proyectos}}', $listado);
-		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
+		$plantillaConDatos = $this->montarDatos($plantilla, $user, $id); 
 		$this->mostrarVista($plantillaConDatos);
 		
 	}
@@ -213,17 +209,17 @@ class controladorInicio extends controlador{
 	/**
 	 * Muestra la vista de registrar docente
 	*/
-	public function mostrarFormRegistrarDocente(){
+	public function mostrarFormRegistrarDocenteAdmin(){
 		
-		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/registrar_docente.html');
-		
-		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/registrar_docente_admin.html');
 
+		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
+		
 		$this->mostrarVista($plantillaConDatos);		
 	}
 	
 	/**
-	 * Muestra la vista de rmodificar docente
+	 * Muestra la vista de modificar docente
 	*/
 	public function mostrarFormModificarDocente(){
 		
@@ -339,7 +335,9 @@ class controladorInicio extends controlador{
 		$plantilla = $this->reemplazar( $plantilla, '{{curso}}', $nombre_curso);
 		$plantilla = $this->reemplazar( $plantilla, '{{id_proyecto}}', $id);
 
-		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
+		$id = isset($_SESSION['admin']) ? $_SESSION['admin'] : $_SESSION['docente'];
+		$user = isset($_SESSION['admin']) ? 'admin' : 'docente';
+		$plantillaConDatos = $this->montarDatos($plantilla, $user, $id);
 
 		$this->mostrarVista($plantillaConDatos);
 	}
@@ -504,12 +502,24 @@ class controladorInicio extends controlador{
 
 		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/principal_docente.html');
 
-		$nuevaPlantilla = $this->calcularTarjetas($plantillaConDatos);
+		$nuevaPlantilla = $this->calcularTarjetas($plantilla);
 
 		$plantillaConDatos = $this->montarDatos($nuevaPlantilla, 'docente', $_SESSION['docente']); 
 		
 		$this->mostrarVista($plantillaConDatos);
 	}
+
+
+	/**
+	 * Muestra la vista de registrar docente
+	*/
+	public function mostrarFormRegistroDocente(){
+		
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/registrar_docente.html');
+		
+		$this->mostrarVista($plantilla);		
+	}
+
 
 	/**
 	 * Muestra la vista de inscribirse a un curso
@@ -543,19 +553,15 @@ class controladorInicio extends controlador{
 
 			$consulta1 = "SELECT c.id_curso, c.codigo, c.nombre, c.grupo FROM curso c WHERE c.id_curso NOT IN (SELECT cd.id_curso FROM curso_docente cd WHERE cd.id_docente = ".$id.")";
 
-			$consulta2 = "SELECT c.id_curso, c.codigo, c.nombre, c.grupo FROM curso c WHERE c.id_curso IN (SELECT cd.id_curso FROM curso_docente cd WHERE cd.id_docente = ".$id.")";
-
 		}else{
 			if(isset($_SESSION['estudiante'])){
 				$consulta1 = "SELECT c.id_curso, c.codigo, c.nombre, c.grupo FROM curso c WHERE c.id_curso NOT IN (SELECT ce.id_curso FROM curso_estudiante ce WHERE ce.id_estudiante = ".$id.")";
 
-				$consulta2 = "SELECT c.id_curso, c.codigo, c.nombre, c.grupo FROM curso c WHERE c.id_curso IN (SELECT ce.id_curso FROM curso_estudiante ce WHERE ce.id_estudiante = ".$id.")";
 			}
 		}
 
 		$this->modelo->conectar();
 		$respuesta1 = $this->modelo->consultar($consulta1);
-		$respuesta2 = $this->modelo->consultar($consulta2);
 		$this->modelo->desconectar();
 
 		//muestro el option select con los cursos en los que se puede inscribir la persona
@@ -564,32 +570,6 @@ class controladorInicio extends controlador{
 			$lista .= '<option name = "curso" value ="'.$row['id_curso'].'" >'.$row['codigo'].' - '.$row['nombre'].' - '.$row['grupo'].'</option>';
 		}
 
-		//muestro el listado de cursos donde está inscrita la persona
-		$listado = '';
-		while ($row = mysqli_fetch_array($respuesta2)) {
-			$codigo_curso = $row['codigo'];
-			$nombre_curso = $row['nombre'];
-			$grupo_curso = $row['grupo'];
-			$id_curso = $row['id_curso'];
-			$nombre_curso_string = '"'.$nombre_curso.'"';
-			$listado .= "
-				<tr>
-					<td>
-						$codigo_curso
-					</td>
-					<td>
-						$nombre_curso
-					</td>
-					<td class='text-center'>
-						$grupo_curso
-					</td>
-					<td class='text-center'>
-						<button type='button' class='btn btn-sm bg-red waves-effect' onclick='salirCurso($id_curso, $nombre_curso_string);'>Salir</button>
-					</td>
-				</tr>";
-		}
-
-		$plantillaConDatos = $this->reemplazar( $plantillaConDatos, '{{listado_cursos}}', $listado);
 		$plantillaConDatos = $this->reemplazar( $plantillaConDatos, '{{lista_cursos}}', $lista);
 		$this->mostrarVista($plantillaConDatos);	
 	}
@@ -656,10 +636,65 @@ class controladorInicio extends controlador{
 	}
 		
 
+
 	/**
 	 * Muestra la vista de los proyectos de los estudiantes
 	*/
-	public function mostrarFormMisProyectos(){
+	public function mostrarFormMisCursosEstudiante(){
+		
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/listado_cursos_estudiante.html');
+		
+		$plantillaConDatos = $this->montarDatos($plantilla, 'estudiante', $_SESSION['estudiante']); 
+		
+		
+		if(isset($_SESSION['estudiante'])){
+
+			$consulta2 = "SELECT c.id_curso, c.codigo, c.nombre, c.grupo FROM curso c WHERE c.id_curso IN (SELECT ce.id_curso FROM curso_estudiante ce WHERE ce.id_estudiante = ".$_SESSION['estudiante'].")";
+		}
+					
+			
+		$this->modelo->conectar();
+		$respuesta2 = $this->modelo->consultar($consulta2);
+		$this->modelo->desconectar();
+
+		
+
+		//muestro el listado de cursos donde está inscrita la persona
+		$listado = '';
+		while ($row = mysqli_fetch_array($respuesta2)) {
+			$codigo_curso = $row['codigo'];
+			$nombre_curso = $row['nombre'];
+			$grupo_curso = $row['grupo'];
+			$id_curso = $row['id_curso'];
+			$nombre_curso_string = '"'.$nombre_curso.'"';
+			$listado .= "
+				<tr>
+					<td>
+						$codigo_curso
+					</td>
+					<td>
+						$nombre_curso
+					</td>
+					<td class='text-center'>
+						$grupo_curso
+					</td>
+					<td class='text-center'>
+						<button type='button' class='btn btn-sm bg-red waves-effect' onclick='salirCurso($id_curso, $nombre_curso_string);'>Salir</button>
+					</td>
+				</tr>";
+		}
+
+		$plantillaConDatos = $this->reemplazar( $plantillaConDatos, '{{listado_cursos}}', $listado);
+
+		$this->mostrarVista($plantillaConDatos);
+		
+	}
+
+
+	/**
+	 * Muestra la vista de los proyectos de los estudiantes
+	*/
+	public function mostrarFormMisProyectosEstudiante(){
 		
 		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/mis_proyectos_estudiante.html');
 		
@@ -927,37 +962,11 @@ class controladorInicio extends controlador{
 	 */	
 	public function generarReportes($tipo_reporte){
 
-		//vista inicial de la tabla de reportes
-		$replace = '<thead>
-		<tr>
-			<th>Nombre proyecto</th>
-			<th>Descripcion</th>
-			<th>Estado</th>
-			<th>Codigo materia</th>
-			<th>Nombre materia</th>
-			<th>Grupo</th>
-		</tr>
-		</thead>
-		<tfoot>
-		<tr>
-			<th>Nombre proyecto</th>
-			<th>Descripcion</th>
-			<th>Estado</th>
-			<th>Codigo materia</th>
-			<th>Nombre materia</th>
-			<th>Grupo</th>
-		</tr>
-		</tfoot>
-		<tbody>
-
-		</tbody>';
-
-
 		switch($tipo_reporte){
 
 			//Estudiantes por curso
 			case 'estudiantes_curso':
-				$consulta1 = "SELECT e.nombre, e.correo, e.telefono, c.codigo, c.nombre  FROM estudiante e, proyecto p, proyecto_estudiante pe, curso c WHERE e.id_estudiante = pe.id_estudiante AND p.id_proyecto = pe.id_proyecto AND p.id_curso = c.id_curso";
+				$consulta1 = "SELECT e.nombre, e.correo, e.telefono, c.codigo, c.nombre, c.grupo  FROM estudiante e, curso c, curso_estudiante ce WHERE e.id_estudiante = ce.id_estudiante AND ce.id_curso = c.id_curso";
 				$this->modelo->conectar();
 				$respuesta1 = $this->modelo->consultar($consulta1);
 				$this->modelo->desconectar();	
@@ -990,21 +999,23 @@ class controladorInicio extends controlador{
 										<td>'.$row['telefono'].'</td>
 										<td>'.$row['codigo'].'</td>
 										<td>'.$row['nombre'].'</td>
-										<td> A </td>
+										<td>'.$row['grupo'].'</td>
 									</tr>';
+					
 				}
 				$lista.='</tbody>';
-
+				
 				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
+
 				//reemplazo la vista inicial con la nueva vista				
-				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
+				$plantilla = $this->reemplazar( $plantilla, 'Espacio para reporte', $lista);
 				$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
 				$this->mostrarVista($plantillaConDatos);
 				break;
 
 			//proyectos por curso
 			case 'proyecto_curso':
-				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.codigo, c.nombre  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
+				$consulta1 = "SELECT p.nombre as proyecto, p.descripcion as descr, p.estado, c.codigo, c.nombre, c.grupo  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
 				$this->modelo->conectar();
 				$respuesta1 = $this->modelo->consultar($consulta1);
 				$this->modelo->desconectar();
@@ -1034,66 +1045,18 @@ class controladorInicio extends controlador{
 					$lista .= '
 								
 									<tr>
-										<td>'.$row['nombre'].'</td>
-										<td>'.$row['descripcion'].'</td>
+										<td>'.$row['proyecto'].'</td>
+										<td>'.$row['descr'].'</td>
 										<td>'.$row['estado'].'</td>
 										<td>'.$row['codigo'].'</td>
 										<td>'.$row['nombre'].'</td>
-										<td> A </td>
+										<td>'.$row['grupo'].'</td>
 									</tr>';
 				}
 				$lista.='</tbody>';
 				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
 				//reemplazo la vista inicial con la nueva vista
-				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
-				$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
-				$this->mostrarVista($plantillaConDatos);
-				break;
-
-			//proyectos por semestre
-			case 'proyecto_semestre':
-				$consulta1 = "SELECT p.nombre, p.descripcion, p.estado, c.codigo, c.nombre  FROM proyecto p, curso c WHERE p.id_curso = c.id_curso";
-				$this->modelo->conectar();
-				$respuesta1 = $this->modelo->consultar($consulta1);
-				$this->modelo->desconectar();
-
-				$lista = '<thead>
-							<tr>
-								<th>Nombre proyecto</th>
-								<th>Descripcion</th>
-								<th>Estado</th>
-								<th>Codigo materia</th>
-								<th>Nombre materia</th>
-								<th>Semestre</th>
-							</tr>
-							</thead>
-							<tfoot>
-							<tr>
-								<th>Nombre proyecto</th>
-								<th>Descripcion</th>
-								<th>Estado</th>
-								<th>Codigo materia</th>
-								<th>Nombre materia</th>
-								<th>Semestre</th>
-							</tr>
-							</tfoot>
-							<tbody>';
-				while ($row = mysqli_fetch_array($respuesta1)) {
-					$lista .= '
-								
-									<tr>
-										<td>'.$row['nombre'].'</td>
-										<td>'.$row['descripcion'].'</td>
-										<td>'.$row['estado'].'</td>
-										<td>'.$row['codigo'].'</td>
-										<td>'.$row['nombre'].'</td>
-										<td> 2017 </td>
-									</tr>';
-				}
-				$lista.='</tbody>';
-				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
-				//reemplazo la vista inicial con la nueva vista
-				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
+				$plantilla = $this->reemplazar( $plantilla, 'Espacio para reporte', $lista);
 				$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
 				$this->mostrarVista($plantillaConDatos);
 				break;
@@ -1136,13 +1099,13 @@ class controladorInicio extends controlador{
 										<td>'.$row['estado'].'</td>
 										<td>'.$row['codigo'].'</td>
 										<td>'.$row['nombre'].'</td>
-										<td> A </td>
+										<td>'.$row['grupo'].'</td>
 									</tr>';
 				}
 				$lista.='</tbody>';
 				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
 				//reemplazo la vista inicial con la nueva vista
-				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
+				$plantilla = $this->reemplazar( $plantilla, 'Espacio para reporte', $lista);
 				$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
 				$this->mostrarVista($plantillaConDatos);
 				break;
@@ -1184,19 +1147,19 @@ class controladorInicio extends controlador{
 										<td>'.$row['estado'].'</td>
 										<td>'.$row['codigo'].'</td>
 										<td>'.$row['nombre'].'</td>
-										<td> A </td>
+										<td>'.$row['grupo'].'</td>
 									</tr>';
 				}
 				$lista.='</tbody>';
 				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
 				//reemplazo la vista inicial con la nueva vista
-				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
+				$plantilla = $this->reemplazar( $plantilla, 'Espacio para reporte', $lista);
 				$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
 				$this->mostrarVista($plantillaConDatos);
 				break;
 
 			case 'curso_semestre':
-				$consulta1 = "SELECT c.codigo, c.nombre  FROM curso c";
+				$consulta1 = "SELECT c.codigo, c.nombre, c.grupo  FROM curso c";
 				$this->modelo->conectar();
 				$respuesta1 = $this->modelo->consultar($consulta1);
 				$this->modelo->desconectar();
@@ -1228,16 +1191,16 @@ class controladorInicio extends controlador{
 									<tr>
 										<td>'.$row['codigo'].'</td>
 										<td>'.$row['nombre'].'</td>
-										<td> 2017 </td>
-										<td> II </td>
-										<td> A </td>
+										<td>'.$row['anio'].'</td>
+										<td>'.$row['periodo'].'</td>
+										<td>'.$row['grupo'].'</td>
 										<td> Actual </td>
 									</tr>';
 				}
 				$lista.='</tbody>';
 				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
 				//reemplazo la vista inicial con la nueva vista
-				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
+				$plantilla = $this->reemplazar( $plantilla, 'Espacio para reporte', $lista);
 				$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
 				$this->mostrarVista($plantillaConDatos);
 				break;
@@ -1284,7 +1247,7 @@ class controladorInicio extends controlador{
 				$lista.='</tbody>';
 				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/generar_reportes.html');
 				//reemplazo la vista inicial con la nueva vista
-				$plantilla = $this->reemplazar( $plantilla, $replace, $lista);
+				$plantilla = $this->reemplazar( $plantilla, 'Espacio para reporte', $lista);
 				$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
 				$this->mostrarVista($plantillaConDatos);
 				break;
@@ -1299,53 +1262,16 @@ class controladorInicio extends controlador{
 	 */	
 	public function invitarDocente($email){
 
-		
-		/*
-				//funcion mail simple 
-				$mail = "Lo invitamos a formar parte de Project Manager";
-				//Titulo
-				$titulo = "Project Manager UFPS";
-				//cabecera
-				$headers = "MIME-Version: 1.0\r\n"; 
-				$headers .= "Content-type: text/html; charset=iso-8859-1\r\n"; 
-				//dirección del remitente 
-				$headers .= "From: ProjectManagerTeam <".$email.">\r\n";
-				//Enviamos el mensaje a tu_dirección_email 
-				$bool = mail($email,$titulo,$mail,$headers);
-				if($bool){
-					$this->mostrarMensaje("Enviado Correctamente");
-				}else{
-					$this->mostrarMensaje("NO ENVIADO, intentar de nuevo");
-				}
-		*/		
+		$url = "http://gidis.ufps.edu.co/projectmanager/index.php?boton=registro_docente";
 
-		
-		//funcion para enviar correo con la libreria PHPMailer
-		$mail = new PHPMailer();
+		$exito = enviarCorreo($email, $url);
 
-		//Luego tenemos que iniciar la validación por SMTP:
-		$mail->IsSMTP();
-		$mail->SMTPAuth = true;
-		$mail->SMTPSecure = 'tls';
-		$mail->SMTPDebug = 4;
-		$mail->Host = "smtp.gmailcom"; // A RELLENAR. Aquí pondremos el SMTP a utilizar. Por ej. mail.midominio.com
-		$mail->Username = "brayamalbertoma@ufps.edu.co"; // A RELLENAR. Email de la cuenta de correo. ej.info@midominio.com La cuenta de correo debe ser creada previamente. 
-		$mail->Password = "Elvira22*"; // A RELLENAR. Aqui pondremos la contraseña de la cuenta de correo
-		$mail->Port = 587; // Puerto de conexión al servidor de envio. 
-		$mail->From = "brayamalbertoma@ufps.edu.co"; // A RELLENARDesde donde enviamos (Para mostrar). Puede ser el mismo que el email creado previamente.
-		$mail->FromName = "Projec Manager UFPS"; //A RELLENAR Nombre a mostrar del remitente. 
-		$mail->AddAddress( $email ); // Esta es la dirección a donde enviamos 
-		$mail->IsHTML(true); // El correo se envía como HTML 
-		$mail->Subject = "Invitacion Project Manager"; // Este es el titulo del email. 
-		$body = "Buen dia docente."; 
-		$body .= "Lo invitamos a formar parte de la plataforma de administracion de projectos: <br> <b>Project Manager</b>"; 
-		$mail->Body = $body; // Mensaje a enviar. 
-		$exito = $mail->Send(); // Envía el correo.
 		if($exito){ 
 			$this->mostrarMensaje("Enviado Correctamente");
 		}else{
 			$this->mostrarMensaje("NO ENVIADO, intentar de nuevo");
 		}
+		
 	}
 	
 		
@@ -1405,7 +1331,7 @@ class controladorInicio extends controlador{
 	/************************************************************************
 	 ******************* FUNCIONES DOCENTE **********************************
 	 ************************************************************************/
-	 
+
 
 
 	/**
@@ -1457,23 +1383,26 @@ class controladorInicio extends controlador{
 	 */
 	public function registrarProyecto($letra, $curso, $nombre, $url_app, $url_codigo, $descripcion){
 
+		$ruta_subida ="";
 
-		//datos del arhivo 
-		$nombre_archivo = $_FILES['documento']['name']; 
-		$tipo_archivo = $_FILES['documento']['type']; 
-		$tamano_archivo = $_FILES['documento']['size'];
-		$ruta_subida =  __DIR__. '/../archivos/'. $nombre_archivo;
-		
-		//compruebo si las características del archivo son las que deseo 
-		if (!((strpos($tipo_archivo, "doc") || strpos($tipo_archivo, "pdf")) && ($tamano_archivo < 8000000))){
-			$_SESSION["mensaje"] = "La extension o el tamano de los archivos no es correcta. Se permiten archivos .pfd o .doc se permiten archivos de 8 Mb maximo."; 
-		}else{ 
-			//si cumple con las caracterisiticas lo guardo en la carpeta destino
-		   	if (move_uploaded_file($_FILES['documento']['tmp_name'], $ruta_subida)){ 
-		      	$_SESSION["mensaje"] = "El archivo ha sido cargado correctamente."; 
-		   	}else{ 
-		      	$_SESSION["mensaje"] = "Ocurrió algún error al subir el fichero. No pudo guardarse."; 
-		   	} 
+		if(isset($_FILES['documento'])){
+			//datos del arhivo 
+			$nombre_archivo = $_FILES['documento']['name']; 
+			$tipo_archivo = $_FILES['documento']['type']; 
+			$tamano_archivo = $_FILES['documento']['size'];
+			$ruta_subida =  __DIR__. '/../archivos/'. $nombre_archivo;
+
+			//compruebo si las características del archivo son las que deseo 
+			if (!((strpos($tipo_archivo, "doc") || strpos($tipo_archivo, "pdf")) && ($tamano_archivo < 8000000))){
+				$_SESSION["mensaje"] = "La extension o el tamano de los archivos no es correcta. Se permiten archivos .pfd o .doc se permiten archivos de 8 Mb maximo."; 
+			}else{ 
+				//si cumple con las caracterisiticas lo guardo en la carpeta destino
+				if (move_uploaded_file($_FILES['documento']['tmp_name'], $ruta_subida)){ 
+					$_SESSION["mensaje"] = "El archivo ha sido cargado correctamente."; 
+				}else{ 
+					$_SESSION["mensaje"] = "Ocurrió algún error al subir el fichero. No pudo guardarse."; 
+				} 
+			}
 		}
 
 		if($letra == 'a'){
@@ -1503,7 +1432,7 @@ class controladorInicio extends controlador{
 	 * @param String $descripcion  
 	 * @return void
 	 */
-	public function modificarProyecto($curso, $nombre, $url_app, $url_codigo, $descripcion, $id_proyecto){
+	public function modificarProyecto($curso, $nombre, $url_app, $url_codigo, $descripcion, $id_proyecto, $estado){
 		
 		//datos del arhivo 
 		$nombre_archivo = $_FILES['documento']['name']; 
@@ -1524,22 +1453,28 @@ class controladorInicio extends controlador{
 		}
 
 		$consulta1 = "UPDATE proyecto 
-				set id_curso = $curso, nombre = '$nombre', descripcion = '$descripcion', url_app = '$url_app', url_code = '$url_codigo' ";
+				set id_curso = $curso, nombre = '$nombre', descripcion = '$descripcion', url_app = '$url_app', url_code = '$url_codigo', estado = '$estado'";
+		
+		if($estado = 'finalizado'){
+			
+			$consulta1 .= ", fecha_fin = CURRENT_DATE";
+		}
 
 		if( isset($_FILES['documento']['name']) && 
 		!empty($_FILES['documento']['name']) &&  
 		!empty($_FILES['documento']['size'])) {
-			$consulta1 .= " archivo = '$ruta_subida' ";
+			$consulta1 .= ", archivo = '$ruta_subida' ";
 		}
 
-		$consulta1 .= "WHERE id_proyecto = $id_proyecto";
+		$consulta1 .= " WHERE id_proyecto = $id_proyecto";
 
 		$this->modelo->conectar();
 		$this->modelo->consultar($consulta1);
 		$this->modelo->desconectar();
 		
+		
 		//Guardo un mensaje para ser mostrado al registrar el proyecto
-		$this->mostrarMensaje("Registro exitoso.");	
+		$this->mostrarMensaje("Modificacion exitosa.");	
 	}
 	
 	
@@ -1800,5 +1735,53 @@ class controladorInicio extends controlador{
 		$mes = date("m");
 
 		return ($mes <=6) ? 1 : 2;
+	}
+
+
+	private function enviarCorreo($email, $url){
+
+
+		/*
+				//funcion mail simple 
+				$mail = "Lo invitamos a formar parte de Project Manager";
+				//Titulo
+				$titulo = "Project Manager UFPS";
+				//cabecera
+				$headers = "MIME-Version: 1.0\r\n"; 
+				$headers .= "Content-type: text/html; charset=iso-8859-1\r\n"; 
+				//dirección del remitente 
+				$headers .= "From: ProjectManagerTeam <".$email.">\r\n";
+				//Enviamos el mensaje a tu_dirección_email 
+				$bool = mail($email,$titulo,$mail,$headers);
+				if($bool){
+					$this->mostrarMensaje("Enviado Correctamente");
+				}else{
+					$this->mostrarMensaje("NO ENVIADO, intentar de nuevo");
+				}
+		*/		
+
+		
+		//funcion para enviar correo con la libreria PHPMailer
+		$mail = new PHPMailer();
+		
+				//Luego tenemos que iniciar la validación por SMTP:
+				$mail->IsSMTP();
+				$mail->SMTPAuth = true;
+				$mail->SMTPSecure = 'tls';
+				$mail->SMTPDebug = 4;
+				$mail->Host = "smtp.gmailcom"; // A RELLENAR. Aquí pondremos el SMTP a utilizar. Por ej. mail.midominio.com
+				$mail->Username = "brayamalbertoma@ufps.edu.co"; // A RELLENAR. Email de la cuenta de correo. ej.info@midominio.com La cuenta de correo debe ser creada previamente. 
+				$mail->Password = "Elvira22*"; // A RELLENAR. Aqui pondremos la contraseña de la cuenta de correo
+				$mail->Port = 587; // Puerto de conexión al servidor de envio. 
+				$mail->From = "brayamalbertoma@ufps.edu.co"; // A RELLENAR Desde donde enviamos (Para mostrar). Puede ser el mismo que el email creado previamente.
+				$mail->FromName = "Projec Manager UFPS"; //A RELLENAR Nombre a mostrar del remitente. 
+				$mail->AddAddress( $email ); // Esta es la dirección a donde enviamos 
+				$mail->IsHTML(true); // El correo se envía como HTML 
+				$mail->Subject = "Invitacion Project Manager"; // Este es el titulo del email. 
+				$body = "Buen dia docente."; 
+				$body .= "Lo invitamos a formar parte de la plataforma de administracion de projectos: <br> <b>Project Manager</b>. <br> Por favor registrese en el siguiente enlace: ".$url.""; 
+				$mail->Body = $body; // Mensaje a enviar. 
+				
+				return $exito = $mail->Send(); // Envía el correo.
 	}
 }

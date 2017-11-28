@@ -140,7 +140,7 @@
                                         <input type="hidden" name="solicitudes" value="registrar_proyecto">
                                         <div class="row clearfix">
                                             <div class="col-xs-12">
-                                                <select class="form-control show-tick">
+                                                <select class="form-control show-tick" name = "curso" required>
                                                     <option value="" disabled selected style="display:none;">Seleccione Curso</option>
                                                     {{lista_cursos}}
                                                 </select>
@@ -151,7 +151,7 @@
                                                 <i class="material-icons">school</i>
                                             </span>
                                             <div class="form-line">
-                                                <input type="text" class="form-control" name="nombre" placeholder="Nombre" required autofocus>
+                                                <input type="text" class="form-control" name="nombre" placeholder="Nombre (Obligatorio)" required autofocus>
                                             </div>
                                         </div>
                                         <div class="input-group">
@@ -159,7 +159,7 @@
                                                 <i class="material-icons">link</i>
                                             </span>
                                             <div class="form-line">
-                                                <input type="text" class="form-control" name="url_app" placeholder="URL Aplicacion" required>
+                                                <input type="text" class="form-control" name="url_app" placeholder="URL Aplicacion (Opcional)">
                                             </div>
                                         </div>
                                         <div class="input-group">
@@ -167,36 +167,27 @@
                                                 <i class="material-icons">link</i>
                                             </span>
                                             <div class="form-line">
-                                                <input type="text" class="form-control" name="url_codigo" placeholder="Repositorio de codigo" required>
+                                                <input type="text" class="form-control" name="url_codigo" placeholder="Repositorio de codigo (Opcional)">
                                             </div>
                                         </div>
                                         <div class="form-group">
                                             <div class="form-line">
-                                                <input type="text" class="datepicker form-control" placeholder="Fecha de finalizacion del proyecto.">
+                                                <input type="text" class="datepicker form-control" placeholder="Fecha de finalizacion del proyecto. (Opcional)">
                                             </div>
                                         </div>
                                         <div class="input-group">
                                             <div class="form-line">
-                                                <textarea rows="4" class="form-control no-resize" placeholder="Descripcion..."></textarea>
-                                            </div>
-                                        </div>
-                                        <div class="row clearfix">
-                                            <div class="col-xs-12">
-                                                <select class="form-control show-tick">
-                                                    <option value="" disabled selected style="display:none;">Estado</option>
-                                                    <option value="desarrollo">En desarrollo</option>
-                                                    <option value="finalizado">Finalizado</option>
-                                                </select>
+                                                <textarea rows="4" class="form-control no-resize" placeholder="Descripcion (Opcional)" name= "descripcion"></textarea>
                                             </div>
                                         </div>
                                         <div class="input-group">
-                                            <span class="input-group-addon">
-                                                <i class="material-icons">file_upload</i>
-                                            </span>
-                                            <div class="form-line">
-                                                <input type="file" class="form-control" name="file_upload" placeholder="Archivo">
+                                                <span class="input-group-addon">
+                                                    <i class="material-icons">file_upload</i>
+                                                </span>
+                                                <div class="form-line">
+                                                    <input type="file" class="form-control" data-max-file-size="8M" data-allowed-file-extensions="pdf doc docx" name="documento" placeholder="Archivo (Opcional)">
+                                                </div>
                                             </div>
-                                        </div>
 
                                         <div class="row">
                                             <div class="col-xs-12 col-md-4 col-md-offset-8">

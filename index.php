@@ -41,7 +41,7 @@
 					break;
 
 				case 'registrar_docente':
-					$controladorInicio->mostrarFormRegistrarDocente();
+					$controladorInicio->mostrarFormRegistrarDocenteAdmin();
 					break;
 
 				case 'modificar_docente':
@@ -60,9 +60,9 @@
 					$controladorInicio->mostrarFormListadoDocentes();
 					break;
 				
-					case 'listado_proyectos':
-					$controladorInicio->mostrarFormListadoProyectos();
-					break;
+				case 'listado_proyectos':
+				$controladorInicio->mostrarFormListadoProyectos();
+				break;
 
 				case 'invitar_docente':
 					$controladorInicio->mostrarFormInvitarDocente();
@@ -119,8 +119,16 @@
 					$controladorInicio->mostrarFormInscribirCurso('d');
 					break;
 
+					case 'listado_proyectos':
+						$controladorInicio->mostrarFormListadoProyectos();
+						break;
+
 					case 'registrar_proyectos':
 						$controladorInicio->mostrarFormRegistrarProyectos('d');
+						break;
+
+					case 'modificar_proyecto':
+						$controladorInicio->mostrarFormModificarProyecto();
 						break;
 
 					default:
@@ -138,13 +146,21 @@
 							unset ( $_SESSION['estudiante'] );
 							header('Location: index.php');
 							break;
-
+						
+						case 'mis_cursos':
+							$controladorInicio->mostrarFormMisCursosEstudiante();
+							break;
+						
 						case 'inscribir_curso':
-						$controladorInicio->mostrarFormInscribirCurso('e');
-						break;
+							$controladorInicio->mostrarFormInscribirCurso('e');
+							break;
+						
+							case 'inscribir_proyecto':
+							$controladorInicio->mostrarFormInscribirProyecto();
+							break;
 
 						case 'mis_proyectos':
-							$controladorInicio->mostrarFormMisProyectos();
+							$controladorInicio->mostrarFormMisProyectosEstudiante();
 							break;
 
 						default:
@@ -167,7 +183,12 @@
 						case 'registro_estudiante':
 							$controladorInicio->mostrarFormRegistrarEstudiante();
 							break;
-						default:
+
+						case 'registro_docente':
+							$controladorInicio->mostrarFormRegistroDocente();
+							break;
+						
+							default:
 						header('Location: index.php');
 						break;
 					}
@@ -197,10 +218,6 @@
 		//si hay una solicitud en la sesion admin
 		if(isset($_SESSION['admin'])){
 
-			if($tipo == "invitar_docente"){
-				$controladorInicio->invitarDocente($_POST['email'] );	
-			}
-
 			if($tipo == "modificar_docente"){
 				$controladorInicio->modificarDocente($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password'], $_POST['id']);
 			}
@@ -218,7 +235,7 @@
 			}
 
 			if($tipo == "generar_reportes"){
-				$controladorInicio->generarReportes($_POST['reporte'] );	
+				$controladorInicio->generarReportes($_POST['reporte']);	
 			}
 
 			if($tipo == "inscribir_curso"){
@@ -226,11 +243,11 @@
 			}
 
 			if($tipo == "registrar_proyecto"){
-				$controladorInicio->registrarProyecto('a', $_POST['curso'], $_POST['nombre'], $_POST['url_app'], $_POST['url_codigo'], $_POST['descripcion'] );	
+				$controladorInicio->registrarProyecto('a', $_POST['curso'], $_POST['nombre'], $_POST['url_app'] || null, $_POST['url_codigo'] || null, $_POST['descripcion'] || null);	
 			}
 
 			if($tipo == "modificar_proyecto"){
-				$controladorInicio->modificarProyecto($_POST['curso'], $_POST['nombre'], $_POST['url_app'], $_POST['url_codigo'], $_POST['descripcion'], $_POST['id_proyecto'] );	
+				$controladorInicio->modificarProyecto($_POST['curso'], $_POST['nombre'], $_POST['url_app'] || null, $_POST['url_codigo'] || null, $_POST['descripcion'] || null, $_POST['id_proyecto'], $_POST['estado'] );	
 			}
 
 		}else{//si hay una solicitud en la sesion docente
@@ -242,8 +259,13 @@
 				}
 
 				if($tipo == "registrar_proyecto"){
-					$controladorInicio->registrarProyecto('d', $_POST['curso'], $_POST['nombre'], $_POST['url_app'], $_POST['url_codigo'], $_POST['descripcion'] );	
+					$controladorInicio->registrarProyecto('d', $_POST['curso'], $_POST['nombre'], $_POST['url_app'] || null, $_POST['url_codigo'] || null, $_POST['descripcion'] || null);	
 				}
+
+				if($tipo == "modificar_proyecto"){
+					$controladorInicio->modificarProyecto($_POST['curso'], $_POST['nombre'], $_POST['url_app'] || null, $_POST['url_codigo'] || null, $_POST['descripcion'] || null, $_POST['id_proyecto'], $_POST['estado'] );	
+				}
+
 			}else{//si hay una solicitud en la sesion estudiante
 
 				if(isset($_SESSION['estudiante'])){
@@ -251,6 +273,7 @@
 					if($tipo == "inscribir_curso"){
 						$controladorInicio->inscribirCurso($_POST['curso'], 'e');	
 					}
+
 				}else{//si hay una solicitud sin iniciar una sesion
 
 					//Si la solicitud es para iniciar sesion, guardamos los datos de sesion 
@@ -265,6 +288,14 @@
 
 					if($tipo == "registro_estudiante"){
 						$controladorInicio->registrarEstudiante($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password'], $_POST['confirm']);
+					}
+
+					if($tipo == "registro_docente"){
+						$controladorInicio->registrarDocente($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password'], $_POST['confirm']);
+					}
+
+					if($tipo == "invitar_docente"){
+						$controladorInicio->invitarDocente($_POST['email'] );	
 					}
 				}
 			}
