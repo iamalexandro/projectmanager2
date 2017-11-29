@@ -34,16 +34,25 @@
         <div class="card">
             <div class="body">
                 <form action="index.php" method="POST">
-                    <input type="hidden" name="recuperarPass" value="recuperarPass">
+                    <input type="hidden" name="recuperarPassValidated" value="recuperarPassValidated">
+                    <input type="hidden" name="email" value="{{email}}">
                     <div class="msg">
-                        Ingresa el correo electronico que usaste para registrarte.
+                        Ingresa la nueva contraseña.
                     </div>
                     <div class="input-group">
                         <span class="input-group-addon">
-                            <i class="material-icons">email</i>
+                            <i class="material-icons">lock</i>
                         </span>
                         <div class="form-line">
-                            <input type="email" class="form-control" name="correo" placeholder="Email" required autofocus>
+                            <input type="password" class="form-control" name="pass" placeholder="Nueva Contraseña" required autofocus>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">
+                            <i class="material-icons">lock</i>
+                        </span>
+                        <div class="form-line">
+                            <input type="password" class="form-control" name="confirm" placeholder="Confirmar Nueva Contraseña" required autofocus>
                         </div>
                     </div>
 

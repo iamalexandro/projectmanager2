@@ -10,7 +10,6 @@ require (__DIR__ .'/../recursos/phpmailer/src/SMTP.php');
 require (__DIR__ .'/../recursos/phpmailer/src/Exception.php');
 
 
-
 /**
 	 * Clase que se encarga de llevar a cabo las peticiones recibidas de los usuarios.
 	 */
@@ -58,6 +57,101 @@ class controladorInicio extends controlador{
 	public function mostrarFormRecuperarPass(){
 		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/recuperar_contrasena.html');
 		$this->mostrarVista($plantilla);
+	}
+
+
+	private function pathUrl($dir = __DIR__){
+		
+				$root = "";
+				$dir = str_replace('\\', '/', realpath($dir));
+		
+				//HTTPS or HTTP
+				$root .= !empty($_SERVER['HTTPS']) ? 'https' : 'http';
+		
+				//HOST
+				$root .= '://' . $_SERVER['HTTP_HOST'];
+		
+				//ALIAS
+				if(!empty($_SERVER['CONTEXT_PREFIX'])) {
+						$root .= $_SERVER['CONTEXT_PREFIX'];
+						$root .= substr($dir, strlen($_SERVER[ 'CONTEXT_DOCUMENT_ROOT' ]));
+				} else {
+						$root .= substr($dir, strlen($_SERVER[ 'DOCUMENT_ROOT' ]));
+				}
+		
+				$root .= '/';
+		
+				return $root;
+		}
+
+
+	public function recuperarPassSendMail($email) {
+
+		$token_url = bin2hex(openssl_random_pseudo_bytes(16));
+		$path = !empty($_SERVER['HTTPS']) ? 'https' : 'http'
+			.'://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
+
+		$url = "$path?tokenRetrivePass=$token_url&userEmail=$email";
+		$from = "brayamalbertoma@ufps.edu.co";
+		$fromName = "Project Manager UFPS";
+		$subject = "Recuperacion de contraseña";
+		$body = "Por favor visite el siguiente enlace para recuperar su contraseña: ".$url;
+
+		$exito = $this->enviarCorreo($email, $from, $fromName, $subject, $body);
+
+		//guardar token en base de datos
+		$saveToken = "INSERT INTO recuperarPass(email, token) VALUES('".$email."', '".$token_url."');";
+		$this->modelo->conectar();
+		$this->modelo->consultar($saveToken);
+		$this->modelo->desconectar();
+
+		if($exito){ 
+			$this->mostrarMensaje("Enviado Correctamente");
+		}else{
+			$this->mostrarMensaje("NO ENVIADO, intentar de nuevo");
+		}
+	}
+
+	public function recuperarPassValidate($token, $email) {
+		$saveToken = "SELECT * FROM recuperarPass AS rp WHERE rp.email='$email' AND rp.token='$token';";
+		$this->modelo->conectar();
+		$var = $this->modelo->consultar($saveToken);
+		$this->modelo->desconectar();
+		
+		if( intval($var->num_rows) ) {
+			$saveToken = "DELETE FROM recuperarPass WHERE email='$email' AND token='$token';";
+			$this->modelo->conectar();
+			$var = $this->modelo->consultar($saveToken);
+			$this->modelo->desconectar();
+			$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/recuperarPass.html');
+			$plantilla = $this->reemplazar( $plantilla, '{{email}}', $email);
+			$this->mostrarVista($plantilla);
+			die();
+		}
+		else {
+			header('Location: index.php');
+		}
+	}
+
+	public function updatePass($pass, $email) {
+
+		$tipo = 'estudiante';
+		$saveToken = "SELECT * FROM docente  WHERE correo='$email';";
+		$this->modelo->conectar();
+		$var = $this->modelo->consultar($saveToken);
+		$this->modelo->desconectar();
+		
+		if( intval($var->num_rows) ) {
+			$tipo = 'docente';
+		}
+
+		$passh= password_hash($pass, PASSWORD_DEFAULT);
+		$saveToken = "UPDATE $tipo SET contrasena = '$passh' WHERE correo='$email';";
+
+		$this->modelo->conectar();
+		$var = $this->modelo->consultar($saveToken);
+		$this->modelo->desconectar();
+		header('Location: index.php');
 	}
 
 
@@ -1280,8 +1374,14 @@ class controladorInicio extends controlador{
 	public function invitarDocente($email){
 
 		$url = "http://gidis.ufps.edu.co/projectmanager/index.php?boton=registro_docente";
+		$from = "brayamalbertoma@ufps.edu.co";
+		$fromName = "Projec Manager UFPS";
+		$subject = "Invitacion Project Manager";
+		$body = "Buen dia docente.";
+		$body .= "Lo invitamos a formar parte de la plataforma de administracion de projectos: 
+			<br> <b>Project Manager</b>. <br> Por favor registrese en el siguiente enlace: ".$url.""; 
 
-		$exito = $this->enviarCorreo($email, $url);
+		$exito = $this->enviarCorreo($email, $from, $fromName, $subject, $body);
 
 		if($exito){ 
 			$this->mostrarMensaje("Enviado Correctamente");
@@ -1540,7 +1640,7 @@ class controladorInicio extends controlador{
 	 * @param String $confirm
 	 * @return void
 	 */
-	public function registrarEstudiante($nombre, $telefono, $correo, $password, $confirm){
+	public function registrarEstudiante($nombre, $telefono, $correo, $password, $codigo, $confirm){
 		
 		
 		//Busco todas las personas para hacer la comprobacion si ya existe o no en la base de datos 	
@@ -1557,7 +1657,7 @@ class controladorInicio extends controlador{
 
 			$passh= password_hash($password, PASSWORD_DEFAULT);
 
-			$consulta2 = "INSERT INTO estudiante VALUES( null, '".$nombre."', '".$correo."', '".$telefono."', '".$passh."')";
+			$consulta2 = "INSERT INTO estudiante(nombre, correo, telefono, contrasena, codigo) VALUES('$nombre', '$correo', $telefono, '$passh', $codigo)";
 			$this->modelo->conectar();
 			$this->modelo->consultar($consulta2);
 			$this->modelo->desconectar();
@@ -1788,7 +1888,7 @@ class controladorInicio extends controlador{
 	}
 
 
-	private function enviarCorreo($email, $url){
+	private function enviarCorreo($email, $from, $fromName, $subject, $body){
 
 
 		/*
@@ -1816,20 +1916,32 @@ class controladorInicio extends controlador{
 		
 				//Luego tenemos que iniciar la validación por SMTP:
 				$mail->IsSMTP();
+
+
+				//comentar este bloque para produccion, desactiva los certificados ssl para que funcione en localhost
+				$mail->SMTPOptions = array(
+						'ssl' => array(
+								'verify_peer' => false,
+								'verify_peer_name' => false,
+								'allow_self_signed' => true
+						)
+				);
+				////////////////////////////////////////////////////////////////////////////////
+
+
 				$mail->SMTPAuth = true;
 				$mail->SMTPSecure = 'tls';
 				$mail->SMTPDebug = 4;
 				$mail->Host = "smtp.gmail.com"; // A RELLENAR. Aquí pondremos el SMTP a utilizar. Por ej. mail.midominio.com
 				$mail->Username = "brayamalbertoma@ufps.edu.co"; // A RELLENAR. Email de la cuenta de correo. ej.info@midominio.com La cuenta de correo debe ser creada previamente. 
 				$mail->Password = "Elvira22*"; // A RELLENAR. Aqui pondremos la contraseña de la cuenta de correo
-				$mail->Port = 587; // Puerto de conexión al servidor de envio. 
-				$mail->From = "brayamalbertoma@ufps.edu.co"; // A RELLENAR Desde donde enviamos (Para mostrar). Puede ser el mismo que el email creado previamente.
-				$mail->FromName = "Projec Manager UFPS"; //A RELLENAR Nombre a mostrar del remitente. 
+				$mail->Port = 587; // Puerto de conexión al servidor de envio.
+				$mail->CharSet = 'UTF-8'; 
+				$mail->From = $from; // A RELLENAR Desde donde enviamos (Para mostrar). Puede ser el mismo que el email creado previamente.
+				$mail->FromName = $fromName; //A RELLENAR Nombre a mostrar del remitente. 
 				$mail->AddAddress( $email ); // Esta es la dirección a donde enviamos 
 				$mail->IsHTML(true); // El correo se envía como HTML 
-				$mail->Subject = "Invitacion Project Manager"; // Este es el titulo del email. 
-				$body = "Buen dia docente."; 
-				$body .= "Lo invitamos a formar parte de la plataforma de administracion de projectos: <br> <b>Project Manager</b>. <br> Por favor registrese en el siguiente enlace: ".$url.""; 
+				$mail->Subject = $subject; // Este es el titulo del email. 
 				$mail->Body = $body; // Mensaje a enviar. 
 				
 				return $exito = $mail->Send(); // Envía el correo.

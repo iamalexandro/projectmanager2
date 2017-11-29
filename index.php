@@ -21,6 +21,11 @@
 	 *************************************************************************************************
 	*/
 
+
+	if( isset($_GET['tokenRetrivePass']) && isset($_GET['userEmail']) ) {
+		$controladorInicio->recuperarPassValidate($_GET['tokenRetrivePass'], $_GET['userEmail']);
+	}
+
 	//Pregunta si existe el parametro boton con algun valor en la url de la pagina
 	if(isset($_GET['boton'])){
 
@@ -212,6 +217,15 @@
 	 *************************************************************************************************
 	*/
 
+	//si no hay ni mierda y se desea recuperar la contraseña
+	if(isset($_POST['recuperarPass'])) {
+		$controladorInicio->recuperarPassSendMail($_POST['correo']);
+	}
+
+	if( isset($_POST['recuperarPassValidated']) && $_POST['pass']==$_POST['confirm'] ) {
+		$controladorInicio->updatePass($_POST['pass'], $_POST['email']);
+	}
+
 
 	//si hay una solicitud por el metodo post
 	if(isset($_POST['solicitudes'])){
@@ -295,7 +309,7 @@
 					}
 
 					if($tipo == "registro_estudiante"){
-						$controladorInicio->registrarEstudiante($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password'], $_POST['confirm']);
+						$controladorInicio->registrarEstudiante($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password'], $_POST['codigo'], $_POST['confirm']);
 					}
 
 					if($tipo == "registro_docente"){
