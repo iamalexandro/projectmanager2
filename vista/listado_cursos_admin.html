@@ -70,7 +70,7 @@
             <div class="collapse navbar-collapse" id="navbar-collapse">
                 <ul class="nav navbar-nav navbar-right">
                     <!-- Call Search -->
-                    <li><a href="index.php?boton=logouta" class="js-search" data-close="true"><i class="material-icons">power_settings_new</i></a></li>
+                    <li><a href="index.php?boton=logoutd" class="js-search" data-close="true"><i class="material-icons">power_settings_new</i></a></li>
                 </ul>
             </div>
         </div>
@@ -136,6 +136,7 @@
                             <span>Mis Proyectos</span>
                         </a>
                     </li>
+                    
                 </ul>
             </div>
             <!-- #Menu -->
@@ -157,12 +158,12 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="block-header">
-                    <h2>LISTADO DE PROYECTOS</h2>
+                    <h2>LISTADO DE CURSOS</h2>
                 </div>
             </div>
             <div class="row">
                 <div class="col-lg-4">
-                        <a href="index.php?boton=registrar_proyectos" class="btn btn-sm bg-green waves-effect'">Agregar Proyecto</a>
+                        <a href="index.php?boton=inscribir_curso" class="btn btn-sm bg-green waves-effect'">Inscribirse a curso</a>
                 </div>
                 <br>
             </div>
@@ -173,17 +174,14 @@
                             <table class="table table-bordered table-striped table-hover dataTable js-exportable">             
                                <thead>
                                 <tr>
+                                    <th>Codigo</th>
                                     <th>Nombre</th>
-                                    <!--<th>Descripcion</th>-->
-                                    <th>URL</th>
-                                    <th class='text-center'>Fecha ini.</th>
-                                    <th class='text-center'>Fecha fin</th>
-                                    <th>Estado</th>
+                                    <th class='text-center'>Grupo</th>
                                     <th class='text-center'>Acciones</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                    {{listado_proyectos}}
+                                    {{listado_cursos}}
                                 </tbody>
                             </table>
                         </div>
@@ -225,16 +223,16 @@
     <script src="recursos/js/demo.js"></script>
 
     <script>
-            function borrarProyecto( id_proyecto ) {
-                if( confirm( '¿Desea eliminar el proyecto?' ) ) {
+            function salirCurso( id_curso, nombre ) {
+                if( confirm( '¿Desea salir del curso '+ nombre+'?' ) ) {
                     $.ajax({
                         type: "POST",
                         url: "index.php",
-                        data: {proyecto: true, id: id_proyecto},
+                        data: {curso: true, id: id_curso},
                         dataType: "json",
                         async: false
                     });
-                    window.location.href='index.php?boton=listado_proyectos';
+                    window.location.href='index.php?boton=listado_cursos';
                 }
             }
         </script>

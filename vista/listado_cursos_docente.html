@@ -65,12 +65,12 @@
             <div class="navbar-header">
                 <a href="javascript:void(0);" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false"></a>
                 <a href="javascript:void(0);" class="bars"></a>
-                <a class="navbar-brand" href="index.php">ADMINISTRADOR</a>
+                <a class="navbar-brand" href="index.php">DOCENTE</a>
             </div>
             <div class="collapse navbar-collapse" id="navbar-collapse">
                 <ul class="nav navbar-nav navbar-right">
                     <!-- Call Search -->
-                    <li><a href="index.php?boton=logouta" class="js-search" data-close="true"><i class="material-icons">power_settings_new</i></a></li>
+                    <li><a href="index.php?boton=logoutd" class="js-search" data-close="true"><i class="material-icons">power_settings_new</i></a></li>
                 </ul>
             </div>
         </div>
@@ -92,40 +92,9 @@
             <!-- Menu -->
             <div class="menu">
                 <ul class="list">
-                    <li class="header">PANEL ADMINISTRADOR</li>
-                    <li class="active">
-                        <a href="index.php?boton=listado_docentes">
-                            <i class="material-icons">person_add</i>
-                            <span>Gestionar Docentes</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="index.php?boton=invitar_docente">
-                            <i class="material-icons">contact_mail</i>
-                            <span>Invitar Docente</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="index.php?boton=agregar_admin">
-                            <i class="material-icons">group_add</i>
-                            <span>Agregar Administrador</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="index.php?boton=listado_cursos">
-                            <i class="material-icons">library_add</i>
-                            <span>Gestionar Cursos</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="index.php?boton=generar_reportes">
-                            <i class="material-icons">description</i>
-                            <span>Generar Reportes</span>
-                        </a>
-                    </li>
                     <li class="header">PANEL DOCENTE</li>
                     <li class="active">
-                        <a href="index.php?boton=inscribir_curso">
+                        <a href="index.php?boton=mis_cursos">
                             <i class="material-icons">school</i>
                             <span>Mis Cursos</span>
                         </a>
@@ -136,6 +105,7 @@
                             <span>Mis Proyectos</span>
                         </a>
                     </li>
+                    
                 </ul>
             </div>
             <!-- #Menu -->
@@ -162,7 +132,7 @@
             </div>
             <div class="row">
                 <div class="col-lg-4">
-                        <a href="index.php?boton=registrar_curso" class="btn btn-sm bg-green waves-effect'">Agregar Curso</a>
+                        <a href="index.php?boton=inscribir_curso" class="btn btn-sm bg-green waves-effect'">Inscribirse a curso</a>
                 </div>
                 <br>
             </div>
@@ -222,8 +192,8 @@
     <script src="recursos/js/demo.js"></script>
 
     <script>
-            function borrarCurso( id_curso, nombre ) {
-                if( confirm( '¿Desea eliminar el curso '+ nombre+'?' ) ) {
+            function salirCurso( id_curso, nombre ) {
+                if( confirm( '¿Desea salir del curso '+ nombre+'?' ) ) {
                     $.ajax({
                         type: "POST",
                         url: "index.php",

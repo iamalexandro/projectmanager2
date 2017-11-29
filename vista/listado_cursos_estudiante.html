@@ -198,8 +198,8 @@
     <script src="recursos/js/demo.js"></script>
 
     <script>
-            function borrarCurso( id_curso, nombre ) {
-                if( confirm( '¿Desea eliminar el curso '+ nombre+'?' ) ) {
+            function salirCurso( id_curso, nombre ) {
+                if( confirm( '¿Desea salir del curso '+ nombre+'?' ) ) {
                     $.ajax({
                         type: "POST",
                         url: "index.php",

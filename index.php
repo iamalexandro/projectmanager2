@@ -84,7 +84,11 @@
 					$controladorInicio->mostrarFormGenerarReportes();
 					break;
 
-				case 'inscribir_curso':
+				case 'mis_cursos':
+					$controladorInicio->mostrarFormMisCursos();
+					break;
+				
+					case 'inscribir_curso':
 					$controladorInicio->mostrarFormInscribirCurso('a');
 					break;
 
@@ -148,7 +152,7 @@
 							break;
 						
 						case 'mis_cursos':
-							$controladorInicio->mostrarFormMisCursosEstudiante();
+							$controladorInicio->mostrarFormMisCursos();
 							break;
 						
 						case 'inscribir_curso':
@@ -221,9 +225,13 @@
 			if($tipo == "modificar_docente"){
 				$controladorInicio->modificarDocente($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password'], $_POST['id']);
 			}
+
+			if($tipo == "invitar_docente"){
+				$controladorInicio->invitarDocente($_POST['email'] );	
+			}
 			
 			if($tipo == "modificar_curso"){
-				$controladorInicio->modificarCurso($_POST['nombre'], $_POST['descripcion'], $_POST['id']);
+				$controladorInicio->modificarCurso($_POST['codigo'], $_POST['nombre'], $_POST['id']);
 			}
 	
 			if($tipo == "agregar_admin"){
@@ -293,10 +301,6 @@
 					if($tipo == "registro_docente"){
 						$controladorInicio->registrarDocente($_POST['nombre'], $_POST['telefono'], $_POST['correo'], $_POST['password'], $_POST['confirm']);
 					}
-
-					if($tipo == "invitar_docente"){
-						$controladorInicio->invitarDocente($_POST['email'] );	
-					}
 				}
 			}
 		}
@@ -359,5 +363,12 @@
 	if(isset($_POST['proyecto'])) {
 		$id_proyecto = $_POST['id'];
 		echo json_encode(array('response' => $controladorInicio->eliminarProyecto($id_proyecto)));
+		exit();
+	}
+
+	//salir curso
+	if(isset($_POST['curso'])) {
+		$id_curso = $_POST['id'];
+		echo json_encode(array('response' => $controladorInicio->salirCurso($id_curso)));
 		exit();
 	}

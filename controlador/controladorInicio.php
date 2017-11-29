@@ -384,7 +384,7 @@ class controladorInicio extends controlador{
 	*/
 	public function mostrarFormListadoCursos(){
 		
-		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/listado_cursos.html');
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/listado_gestionar_cursos.html');
 		
 		$cursos = "SELECT codigo, nombre, grupo, id_curso FROM curso ORDER BY nombre";
 		$id = $_SESSION['admin'];
@@ -456,7 +456,7 @@ class controladorInicio extends controlador{
 		$id = $_GET['id'];
 		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/modificar_curso.html');
 		
-		$consulta2 = "SELECT nombre, descripcion FROM curso WHERE id_curso = $id";
+		$consulta2 = "SELECT codigo, nombre FROM curso WHERE id_curso = $id";
 
 		$this->modelo->conectar();
 		$respuesta2 = $this->modelo->consultar($consulta2);
@@ -465,12 +465,12 @@ class controladorInicio extends controlador{
 		$nombre_curso = '';
 		$descripcion_curso = '';
 		while ($row = mysqli_fetch_array($respuesta2)) {
+			$codigo_curso = $row['codigo'];
 			$nombre_curso = $row['nombre'];
-			$descripcion_curso = $row['descripcion'];
 		}
 
+		$plantilla = $this->reemplazar( $plantilla, '{{codigo_curso}}', $codigo_curso);
 		$plantilla = $this->reemplazar( $plantilla, '{{nombre_curso}}', $nombre_curso);
-		$plantilla = $this->reemplazar( $plantilla, '{{descripcion_curso}}', $descripcion_curso);
 		$plantilla = $this->reemplazar( $plantilla, '{{id}}', $id);
 		$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
 		
@@ -640,19 +640,36 @@ class controladorInicio extends controlador{
 	/**
 	 * Muestra la vista de los proyectos de los estudiantes
 	*/
-	public function mostrarFormMisCursosEstudiante(){
+	public function mostrarFormMisCursos(){
 		
-		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/listado_cursos_estudiante.html');
-		
-		$plantillaConDatos = $this->montarDatos($plantilla, 'estudiante', $_SESSION['estudiante']); 
-		
-		
-		if(isset($_SESSION['estudiante'])){
-
-			$consulta2 = "SELECT c.id_curso, c.codigo, c.nombre, c.grupo FROM curso c WHERE c.id_curso IN (SELECT ce.id_curso FROM curso_estudiante ce WHERE ce.id_estudiante = ".$_SESSION['estudiante'].")";
-		}
-					
+		if(isset($_SESSION['admin'])){
 			
+			$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/listado_cursos_admin.html');
+			$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']); 
+
+			$consulta2 = "SELECT c.id_curso, c.codigo, c.nombre, c.grupo FROM curso c WHERE c.id_curso IN (SELECT cd.id_curso FROM curso_docente cd WHERE cd.id_docente = ".$_SESSION['admin'].")";
+				
+		}else{
+			
+			if(isset($_SESSION['docente'])){
+
+				$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/listado_cursos_admin.html');
+				$plantillaConDatos = $this->montarDatos($plantilla, 'admin', $_SESSION['admin']);
+				
+				$consulta2 = "SELECT c.id_curso, c.codigo, c.nombre, c.grupo FROM curso c WHERE c.id_curso IN (SELECT cd.id_curso FROM curso_docente cd WHERE cd.id_docente = ".$_SESSION['docente'].")";
+
+			}else{
+				
+				if(isset($_SESSION['estudiante'])){
+					
+					$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/listado_cursos_estudiante.html');
+					$plantillaConDatos = $this->montarDatos($plantilla, 'estudiante', $_SESSION['estudiante']);
+		
+					$consulta2 = "SELECT c.id_curso, c.codigo, c.nombre, c.grupo FROM curso c WHERE c.id_curso IN (SELECT ce.id_curso FROM curso_estudiante ce WHERE ce.id_estudiante = ".$_SESSION['estudiante'].")";
+				}
+			}
+		}
+		 
 		$this->modelo->conectar();
 		$respuesta2 = $this->modelo->consultar($consulta2);
 		$this->modelo->desconectar();
@@ -881,10 +898,10 @@ class controladorInicio extends controlador{
 	 * @param int $id_docente   
 	 * @return void
 	 */
-	public function modificarCurso($nombre, $descripcion, $id_curso){
+	public function modificarCurso($codigo, $nombre, $id_curso){
 		 
-		$consulta2 = "UPDATE curso set nombre = '$nombre', 
-			descripcion = '$descripcion' WHERE id_curso = $id_curso";
+		$consulta2 = "UPDATE curso SET codigo = '$codigo', 
+			nombre = '$nombre' WHERE id_curso = $id_curso";
 
 		$this->modelo->conectar();
 		$this->modelo->consultar($consulta2);
@@ -1264,7 +1281,7 @@ class controladorInicio extends controlador{
 
 		$url = "http://gidis.ufps.edu.co/projectmanager/index.php?boton=registro_docente";
 
-		$exito = enviarCorreo($email, $url);
+		$exito = $this->enviarCorreo($email, $url);
 
 		if($exito){ 
 			$this->mostrarMensaje("Enviado Correctamente");
@@ -1325,6 +1342,37 @@ class controladorInicio extends controlador{
 	}
 
 
+
+	/**
+	 * Elimina un docente
+	 * @return void
+	 */	
+	public function salirCurso() {
+		if(isset($_POST['curso'])) {
+			
+			if(isset($_SESSION['admin'])){
+				$id = $_SESSION['admin'];
+				$consulta1 = "DELETE FROM curso_docente WHERE id_docente = $id";
+
+			}else{
+				if(isset($_SESSION['docente'])){
+					$id = $_SESSION['docente'];
+					$consulta1 = "DELETE FROM curso_docente WHERE id_docente = $id";
+				}else{
+					if(isset($_SESSION['estudiante'])){
+						$id = $_SESSION['estudiante'];
+						$consulta1 = "DELETE FROM curso_estudiante WHERE id_estudiante = $id";
+					}
+				}
+			}
+			
+			$this->modelo->conectar();
+			$resultado=$this->modelo->consultar($consulta1);
+			$this->modelo->desconectar();
+
+			echo json_encode( array('response' => 1) );
+		}
+	}
 
 
 
@@ -1692,7 +1740,9 @@ class controladorInicio extends controlador{
 		echo'<script type="text/javascript">
 		alert("'.$mensaje.'");
 		window.location.href = "index.php";
-	 	</script>';
+		 </script>';
+		 
+		
 	}
 
 	/**
@@ -1769,7 +1819,7 @@ class controladorInicio extends controlador{
 				$mail->SMTPAuth = true;
 				$mail->SMTPSecure = 'tls';
 				$mail->SMTPDebug = 4;
-				$mail->Host = "smtp.gmailcom"; // A RELLENAR. Aquí pondremos el SMTP a utilizar. Por ej. mail.midominio.com
+				$mail->Host = "smtp.gmail.com"; // A RELLENAR. Aquí pondremos el SMTP a utilizar. Por ej. mail.midominio.com
 				$mail->Username = "brayamalbertoma@ufps.edu.co"; // A RELLENAR. Email de la cuenta de correo. ej.info@midominio.com La cuenta de correo debe ser creada previamente. 
 				$mail->Password = "Elvira22*"; // A RELLENAR. Aqui pondremos la contraseña de la cuenta de correo
 				$mail->Port = 587; // Puerto de conexión al servidor de envio. 
