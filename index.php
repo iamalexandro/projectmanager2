@@ -164,7 +164,7 @@
 							$controladorInicio->mostrarFormInscribirCurso('e');
 							break;
 						
-							case 'inscribir_proyecto':
+						case 'inscribir_proyecto':
 							$controladorInicio->mostrarFormInscribirProyecto();
 							break;
 

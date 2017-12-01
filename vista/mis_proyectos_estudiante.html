@@ -31,9 +31,6 @@
     <!-- Bootstrap Select Css -->
     <link href="recursos/plugins/bootstrap-select/css/bootstrap-select.css" rel="stylesheet" />
 
-    <!-- JQuery DataTable Css -->
-    <link href="recursos/plugins/jquery-datatable/skin/bootstrap/css/dataTables.bootstrap.css" rel="stylesheet">
-
     <!-- Custom Css -->
     <link href="recursos/css/style.css" rel="stylesheet">
 
@@ -99,13 +96,7 @@
                     <li class="active">
                         <a href="index.php?boton=mis_cursos">
                             <i class="material-icons">school</i>
-                            <span>Mis cursos</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="index.php?boton=inscribir_proyecto">
-                            <i class="material-icons">folder_shared</i>
-                            <span>Inscribirme a un proyecto</span>
+                            <span>Mis Cursos</span>
                         </a>
                     </li>
                     <li>
@@ -114,6 +105,7 @@
                             <span>Mis Proyectos</span>
                         </a>
                     </li>
+                    
                 </ul>
             </div>
             <!-- #Menu -->
@@ -133,75 +125,38 @@
     </section>
     <section class="content">
         <div class="container-fluid">
-            <div class="block-header">
-                <h2>MIS PROYECTOS</h2>
-            </div>
-            <!-- Input -->
-            <!-- Select -->
-            <div class="row clearfix">
-                <div class="col-xs-12">
-                    <div class="card">
-                        <div class="body">
-                            <div class="row clearfix">
-                                <div class="col-xs-12">
-                                   <form method="POST" action="index.php">
-
-                                       <input type="hidden" name="solicitudes" value="mis_proyectos">
-
-                                        <select class="form-control show-tick" name="reporte">
-                                            <option value="" disabled selected style="display:none;">Mis proyectos</option>
-                                            <!--{{mis_proyectos}}-->
-                                        </select>
-                                        <div class="col-md-4 col-md-offset-8">
-                                            <button class="btn btn-block btn-lg bg-blue waves-effect" type="submit">Buscar proyecto</button>
-                                        </div>
-                                   </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="row">
+                <div class="block-header">
+                    <h2>LISTADO DE PROYECTOS</h2>
                 </div>
             </div>
-
+            <div class="row">
+                <div class="col-lg-4">
+                        <a href="index.php?boton=inscribir_proyecto" class="btn btn-sm bg-green waves-effect'">Inscribirse a proyecto</a>
+                </div>
+                <br>
+            </div>
             <div class="row clearfix">
-                <div class="col-xs-12">
+                <div class="col-lg-12">
                     <div class="card">
-                        <div class="header">
-                            <h2>MIS PROYECTOS</h2>
-                        </div>
                         <div class="body">
-                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">
-                                
-                                    
+                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">             
                                <thead>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </thead>
-                            <tfoot>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </tfoot>
-                            <tbody>
-
-                            </tbody>
+                                <tr>
+                                    <th>Codigo</th>
+                                    <th>Nombre</th>
+                                    <th class='text-center'>Grupo</th>
+                                    <th class='text-center'>Acciones</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    {{listado_proyectos}}
+                                </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
-            <!-- #END# Select -->
         </div>
     </section>
 
@@ -233,21 +188,23 @@
     <script src="recursos/js/admin.js"></script>
     <script src="recursos/js/pages/forms/basic-form-elements.js"></script>
 
-
-    <script src="recursos/js/pages/tables/jquery-datatable.js"></script>
-    <script src="recursos/plugins/jquery-datatable/jquery.dataTables.js"></script>
-    <script src="recursos/plugins/jquery-datatable/skin/bootstrap/js/dataTables.bootstrap.js"></script>
-    <script src="recursos/plugins/jquery-datatable/extensions/export/dataTables.buttons.min.js"></script>
-    <script src="recursos/plugins/jquery-datatable/extensions/export/buttons.flash.min.js"></script>
-    <script src="recursos/plugins/jquery-datatable/extensions/export/jszip.min.js"></script>
-    <script src="recursos/plugins/jquery-datatable/extensions/export/pdfmake.min.js"></script>
-    <script src="recursos/plugins/jquery-datatable/extensions/export/vfs_fonts.js"></script>
-    <script src="recursos/plugins/jquery-datatable/extensions/export/buttons.html5.min.js"></script>
-    <script src="recursos/plugins/jquery-datatable/extensions/export/buttons.print.min.js"></script>
-
     <!-- Demo Js -->
     <script src="recursos/js/demo.js"></script>
-    <script src="recursos/js/selects-script.js"></script>
+
+    <script>
+            function salirCurso( id_curso, nombre ) {
+                if( confirm( '¿Desea salir del curso '+ nombre+'?' ) ) {
+                    $.ajax({
+                        type: "POST",
+                        url: "index.php",
+                        data: {curso: true, id: id_curso},
+                        dataType: "json",
+                        async: false
+                    });
+                    window.location.href='index.php?boton=mis_cursos';
+                }
+            }
+        </script>
 </body>
 
 </html>

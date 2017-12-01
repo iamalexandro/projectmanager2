@@ -31,9 +31,6 @@
     <!-- Bootstrap Select Css -->
     <link href="recursos/plugins/bootstrap-select/css/bootstrap-select.css" rel="stylesheet" />
 
-    <!-- JQuery DataTable Css -->
-    <link href="recursos/plugins/jquery-datatable/skin/bootstrap/css/dataTables.bootstrap.css" rel="stylesheet">
-
     <!-- Custom Css -->
     <link href="recursos/css/style.css" rel="stylesheet">
 
@@ -73,7 +70,7 @@
             <div class="collapse navbar-collapse" id="navbar-collapse">
                 <ul class="nav navbar-nav navbar-right">
                     <!-- Call Search -->
-                    <li><a href="index.php?boton=logouta" class="js-search" data-close="true"><i class="material-icons">power_settings_new</i></a></li>
+                    <li><a href="index.php?boton=logoute" class="js-search" data-close="true"><i class="material-icons">power_settings_new</i></a></li>
                 </ul>
             </div>
         </div>
@@ -97,9 +94,9 @@
                 <ul class="list">
                     <li class="header">PANEL ESTUDIANTE</li>
                     <li class="active">
-                        <a href="index.php?boton=inscribir_curso">
+                        <a href="index.php?boton=mis_cursos">
                             <i class="material-icons">school</i>
-                            <span>Inscribirse a Curso</span>
+                            <span>Mis Cursos</span>
                         </a>
                     </li>
                     <li>
@@ -128,7 +125,7 @@
     <section class="content">
         <div class="container-fluid">
             <div class="block-header">
-                <h2>MIS PROYECTOS</h2>
+                <h2>INSCRIBIRSE A UN PROYECTO</h2>
             </div>
             <!-- Input -->
             <!-- Select -->
@@ -136,61 +133,26 @@
                 <div class="col-xs-12">
                     <div class="card">
                         <div class="body">
-                            <div class="row clearfix">
-                                <div class="col-xs-12">
-                                   <form method="POST" action="index.php">
+                            <Form method="POST" action="index.php">
+                                <div class="row clearfix">
+                                    <div class="col-xs-12">
 
-                                       <input type="hidden" name="solicitudes" value="mis_proyectos">
-
-                                        <select class="form-control show-tick" name="reporte">
-                                            <option value="" disabled selected style="display:none;">Mis proyectos</option>
-                                            <!--{{mis_proyectos}}-->
+                                        <input type="hidden" name="solicitudes" value="inscribir_curso">
+                                        
+                                        <select class="form-control show-tick" name="curso">
+                                            <option value="" disabled selected style="display:none;">Seleccione Proyecto</option>
+                                            {{lista_proyectos}}
                                         </select>
-                                        <div class="col-md-4 col-md-offset-8">
-                                            <button class="btn btn-block btn-lg bg-blue waves-effect" type="submit">Buscar proyecto</button>
-                                        </div>
-                                   </form>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="row clearfix">
-                <div class="col-xs-12">
-                    <div class="card">
-                        <div class="header">
-                            <h2>MIS PROYECTOS</h2>
-                        </div>
-                        <div class="body">
-                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">
-                                
-                                    
-                               <thead>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </thead>
-                            <tfoot>
-                            <tr>
-                                <th>Nombre proyecto</th>
-                                <th>Descripcion</th>
-                                <th>Estado</th>
-                                <th>Codigo materia</th>
-                                <th>Nombre materia</th>
-                                <th>Grupo</th>
-                            </tr>
-                            </tfoot>
-                            <tbody>
+                                <div class="row clearfix">
+                                    <div class="col-md-4 col-md-offset-8">
+                                        <button class="btn btn-block btn-lg bg-blue waves-effect" type="submit">INSCRIBIRSE</button>
+                                    </div>
+                                </div>
 
-                            </tbody>
-                            </table>
+                            </Form>
                         </div>
                     </div>
                 </div>
@@ -227,21 +189,8 @@
     <script src="recursos/js/admin.js"></script>
     <script src="recursos/js/pages/forms/basic-form-elements.js"></script>
 
-
-    <script src="recursos/js/pages/tables/jquery-datatable.js"></script>
-    <script src="recursos/plugins/jquery-datatable/jquery.dataTables.js"></script>
-    <script src="recursos/plugins/jquery-datatable/skin/bootstrap/js/dataTables.bootstrap.js"></script>
-    <script src="recursos/plugins/jquery-datatable/extensions/export/dataTables.buttons.min.js"></script>
-    <script src="recursos/plugins/jquery-datatable/extensions/export/buttons.flash.min.js"></script>
-    <script src="recursos/plugins/jquery-datatable/extensions/export/jszip.min.js"></script>
-    <script src="recursos/plugins/jquery-datatable/extensions/export/pdfmake.min.js"></script>
-    <script src="recursos/plugins/jquery-datatable/extensions/export/vfs_fonts.js"></script>
-    <script src="recursos/plugins/jquery-datatable/extensions/export/buttons.html5.min.js"></script>
-    <script src="recursos/plugins/jquery-datatable/extensions/export/buttons.print.min.js"></script>
-
     <!-- Demo Js -->
     <script src="recursos/js/demo.js"></script>
-    <script src="recursos/js/selects-script.js"></script>
 </body>
 
 </html>

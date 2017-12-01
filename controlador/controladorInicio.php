@@ -60,31 +60,6 @@ class controladorInicio extends controlador{
 	}
 
 
-	private function pathUrl($dir = __DIR__){
-		
-				$root = "";
-				$dir = str_replace('\\', '/', realpath($dir));
-		
-				//HTTPS or HTTP
-				$root .= !empty($_SERVER['HTTPS']) ? 'https' : 'http';
-		
-				//HOST
-				$root .= '://' . $_SERVER['HTTP_HOST'];
-		
-				//ALIAS
-				if(!empty($_SERVER['CONTEXT_PREFIX'])) {
-						$root .= $_SERVER['CONTEXT_PREFIX'];
-						$root .= substr($dir, strlen($_SERVER[ 'CONTEXT_DOCUMENT_ROOT' ]));
-				} else {
-						$root .= substr($dir, strlen($_SERVER[ 'DOCUMENT_ROOT' ]));
-				}
-		
-				$root .= '/';
-		
-				return $root;
-		}
-
-
 	public function recuperarPassSendMail($email) {
 
 		$token_url = bin2hex(openssl_random_pseudo_bytes(16));
@@ -809,10 +784,100 @@ class controladorInicio extends controlador{
 		
 		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/mis_proyectos_estudiante.html');
 		
+		$proyectos = false;
+		
+		$id =  $_SESSION['estudiante'];
+		$user = 'estudiante';			
+		$proyectos = "SELECT p.nombre, p.descripcion, p.url_app, p.fecha_inicio, p.fecha_fin, p.estado, p.id_proyecto FROM proyecto p, proyecto_estudiante pe, estudiante e WHERE e.id_estudiante = $id AND pe.id_proyecto = p.id_proyecto AND e.id_estudiante = pe.id_estudiante  ";
+
+		
+		$this->modelo->conectar();
+		$proyectos = $this->modelo->consultar($proyectos);
+		$this->modelo->desconectar();
+
+		$nombre_proy = '';
+		$descripcion_proy = '';
+		$url_proy = '';
+		$fecha_ini_proy = '';
+		$fecha_fin_proy = '';
+		$estado_proy = '';
+		$id_proy = '';
+		$listado = '';
+		while ($row = mysqli_fetch_array($proyectos)) {
+
+			
+			$nombre_proy = $row['nombre'];
+			$descripcion_proy = $row['descripcion'];
+			$url_proy = $row['url_app'];
+			$fecha_ini_proy = $row['fecha_inicio'];
+			$fecha_fin_proy = $row['fecha_fin'] ? $row['fecha_fin'] : '-----';
+			$estado_proy = $row['estado'];
+			$id_proy = $row['id_proyecto'];
+			$listado .= "
+				<tr>
+					<td>
+							$nombre_proy
+					</td>
+					<!--<td>
+							$descripcion_proy
+					</td>-->
+					<td>
+							$url_proy
+					</td>
+					<td class='text-center'>
+							$fecha_ini_proy
+					</td>
+					<td class='text-center'>
+							$fecha_fin_proy
+					</td>
+					<td>
+							$estado_proy
+					</td>
+					<td class='text-center'>
+						<a href='index.php?boton=modificar_proyecto&id=$id_proy' class='btn btn-sm bg-blue waves-effect'>Editar</a>
+						<button type='button' class='btn btn-sm bg-red waves-effect' onclick='borrarProyecto($id_proy);'>Eliminar</button>
+					</td>
+				</tr>
+			";
+
+		}
+		
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/mis_proyectos_estudiante.html');
+		$plantilla = $this->reemplazar( $plantilla, '{{listado_proyectos}}', $listado);
+
+
 		$plantillaConDatos = $this->montarDatos($plantilla, 'estudiante', $_SESSION['estudiante']); 
 		
 		$this->mostrarVista($plantillaConDatos);
 		
+	}
+
+
+
+
+	public function mostrarFormInscribirProyecto(){
+
+		$id = $_SESSION['estudiante'];
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/inscribirse_a_proyecto_estudiantes.html');
+		$plantillaConDatos = $this->montarDatos($plantilla, 'estudiante', $id);
+				
+		if(isset($_SESSION['estudiante'])){
+			$consulta1 = "SELECT p.id_proyecto, p.nombre, c.nombre, c.grupo FROM proyecto p, curso c WHERE c.id_curso = p.id_curso AND  p.id_proyecto NOT IN (SELECT pe.id_proyecto FROM proyectto_estudiante pe WHERE pe.id_estudiante = ".$id.")";
+
+		}
+		
+		$this->modelo->conectar();
+		$respuesta1 = $this->modelo->consultar($consulta1);
+		$this->modelo->desconectar();
+
+		//muestro el option select con los cursos en los que se puede inscribir la persona
+		$lista = '';
+		while ($row = mysqli_fetch_array($respuesta1)) {
+			$lista .= '<option name = "curso" value ="'.$row['id_proyecto'].'" >'.$row['nombre'].' - '.$row['nombre'].' - '.$row['grupo'].'</option>';
+		}
+
+		$plantillaConDatos = $this->reemplazar( $plantillaConDatos, '{{lista_proyectos}}', $lista);
+		$this->mostrarVista($plantillaConDatos);	
 	}
 	/*************************************************************************************************
 	 ***********************    FUNCIONES DEL PROYECTO    ********************************************
@@ -1055,7 +1120,6 @@ class controladorInicio extends controlador{
 
 		$grupo = $this->consultarGrupo($codigo);
 		$consulta1 = "INSERT INTO curso VALUES( null, '".$codigo."', '".$nombre."', '".$grupo."')";
-		echo $codigo.$nombre.$grupo;
 		$this->modelo->conectar();
 		$this->modelo->consultar($consulta1);
 		$this->modelo->desconectar();
@@ -1452,16 +1516,16 @@ class controladorInicio extends controlador{
 			
 			if(isset($_SESSION['admin'])){
 				$id = $_SESSION['admin'];
-				$consulta1 = "DELETE FROM curso_docente WHERE id_docente = $id";
+				$consulta1 = "DELETE FROM curso_docente WHERE id_docente = $id AND id_curso = ".$_POST['curso']." ";
 
 			}else{
 				if(isset($_SESSION['docente'])){
 					$id = $_SESSION['docente'];
-					$consulta1 = "DELETE FROM curso_docente WHERE id_docente = $id";
+					$consulta1 = "DELETE FROM curso_docente WHERE id_docente = $id AND id_curso = ".$_POST['curso']." ";
 				}else{
 					if(isset($_SESSION['estudiante'])){
 						$id = $_SESSION['estudiante'];
-						$consulta1 = "DELETE FROM curso_estudiante WHERE id_estudiante = $id";
+						$consulta1 = "DELETE FROM curso_estudiante WHERE id_estudiante = $id AND id_curso = ".$_POST['curso']." ";
 					}
 				}
 			}
@@ -1919,13 +1983,14 @@ class controladorInicio extends controlador{
 
 
 				//comentar este bloque para produccion, desactiva los certificados ssl para que funcione en localhost
+				/*
 				$mail->SMTPOptions = array(
 						'ssl' => array(
 								'verify_peer' => false,
 								'verify_peer_name' => false,
 								'allow_self_signed' => true
 						)
-				);
+				);*/
 				////////////////////////////////////////////////////////////////////////////////
 
 
@@ -1946,4 +2011,28 @@ class controladorInicio extends controlador{
 				
 				return $exito = $mail->Send(); // Envía el correo.
 	}
+
+	private function pathUrl($dir = __DIR__){
+		
+				$root = "";
+				$dir = str_replace('\\', '/', realpath($dir));
+		
+				//HTTPS or HTTP
+				$root .= !empty($_SERVER['HTTPS']) ? 'https' : 'http';
+		
+				//HOST
+				$root .= '://' . $_SERVER['HTTP_HOST'];
+		
+				//ALIAS
+				if(!empty($_SERVER['CONTEXT_PREFIX'])) {
+						$root .= $_SERVER['CONTEXT_PREFIX'];
+						$root .= substr($dir, strlen($_SERVER[ 'CONTEXT_DOCUMENT_ROOT' ]));
+				} else {
+						$root .= substr($dir, strlen($_SERVER[ 'DOCUMENT_ROOT' ]));
+				}
+		
+				$root .= '/';
+		
+				return $root;
+		}
 }
