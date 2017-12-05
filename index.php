@@ -296,6 +296,10 @@
 						$controladorInicio->inscribirCurso($_POST['curso'], 'e');	
 					}
 
+					if($tipo == "seleccionar_curso"){
+						$controladorInicio->mostrarProyectos($_POST['curso']);
+					}
+
 				}else{//si hay una solicitud sin iniciar una sesion
 
 					//Si la solicitud es para iniciar sesion, guardamos los datos de sesion 
@@ -384,5 +388,12 @@
 	if(isset($_POST['curso'])) {
 		$id_curso = $_POST['id'];
 		echo json_encode(array('response' => $controladorInicio->salirCurso($id_curso)));
+		exit();
+	}
+
+	//inscribir proyecto
+	if(isset($_POST['proyecto'])) {
+		$id_proyecto = $_POST['id'];
+		echo json_encode(array('response' => $controladorInicio->inscribirProyecto($id_proyecto)));
 		exit();
 	}

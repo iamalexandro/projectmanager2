@@ -858,11 +858,11 @@ class controladorInicio extends controlador{
 	public function mostrarFormInscribirProyecto(){
 
 		$id = $_SESSION['estudiante'];
-		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/inscribirse_a_proyecto_estudiantes.html');
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/inscribirse_a_proyecto_estudiante.html');
 		$plantillaConDatos = $this->montarDatos($plantilla, 'estudiante', $id);
 				
 		if(isset($_SESSION['estudiante'])){
-			$consulta1 = "SELECT p.id_proyecto, p.nombre, c.nombre, c.grupo FROM proyecto p, curso c WHERE c.id_curso = p.id_curso AND  p.id_proyecto NOT IN (SELECT pe.id_proyecto FROM proyectto_estudiante pe WHERE pe.id_estudiante = ".$id.")";
+			$consulta1 = "SELECT p.id_proyecto, p.nombre, c.nombre, c.grupo FROM proyecto p, curso c WHERE c.id_curso = p.id_curso AND  p.id_proyecto NOT IN (SELECT pe.id_proyecto FROM proyecto_estudiante pe WHERE pe.id_estudiante = ".$id.")";
 
 		}
 		
@@ -879,6 +879,87 @@ class controladorInicio extends controlador{
 		$plantillaConDatos = $this->reemplazar( $plantillaConDatos, '{{lista_proyectos}}', $lista);
 		$this->mostrarVista($plantillaConDatos);	
 	}
+
+
+	public function mostrarProyectos($curso){
+
+		$plantilla = $this->leerPlantilla(__DIR__ . '/../vista/inscribirse_a_proyecto_estudiante.html');
+		
+		$id = $_SESSION['estudiante'];
+		
+		if(isset($_SESSION['estudiante'])){
+			$consulta1 = "SELECT p.id_proyecto, p.nombre, c.nombre, c.grupo FROM proyecto p, curso c WHERE c.id_curso = p.id_curso AND  p.id_proyecto NOT IN (SELECT pe.id_proyecto FROM proyecto_estudiante pe WHERE pe.id_estudiante = ".$id.")";
+
+			$consulta2 = "SELECT * FROM curso c, proyecto p WHERE p.id_curso = c.id_curso AND c.id_curso =".$curso." AND p.estado = 'En desarrollo'";
+
+		}
+		
+		$this->modelo->conectar();
+		$respuesta1 = $this->modelo->consultar($consulta1);
+		$proyectos = $this->modelo->consultar($consulta2);		
+		$this->modelo->desconectar();
+
+		//muestro el option select con los cursos en los que se puede inscribir la persona
+		$lista = '';
+		while ($row = mysqli_fetch_array($respuesta1)) {
+			$lista .= '<option name = "curso" value ="'.$row['id_proyecto'].'" >'.$row['nombre'].' - '.$row['nombre'].' - '.$row['grupo'].'</option>';
+		}
+
+
+
+		$nombre_proy = '';
+		$descripcion_proy = '';
+		$url_proy = '';
+		$fecha_ini_proy = '';
+		$fecha_fin_proy = '';
+		$estado_proy = '';
+		$id_proy = '';
+		$listado = '';
+		while ($row = mysqli_fetch_array($proyectos)) {
+
+			
+			$nombre_proy = $row['nombre'];
+			$descripcion_proy = $row['descripcion'];
+			$url_proy = $row['url_app'];
+			$fecha_ini_proy = $row['fecha_inicio'];
+			$fecha_fin_proy = $row['fecha_fin'] ? $row['fecha_fin'] : '-----';
+			$estado_proy = $row['estado'];
+			$id_proy = $row['id_proyecto'];
+			$listado .= "
+				<tr>
+					<td>
+							$nombre_proy
+					</td>
+					<!--<td>
+							$descripcion_proy
+					</td>-->
+					<td>
+							$url_proy
+					</td>
+					<td class='text-center'>
+							$fecha_ini_proy
+					</td>
+					<td class='text-center'>
+							$fecha_fin_proy
+					</td>
+					<td>
+							$estado_proy
+					</td>
+					<td class='text-center'>
+						<button type='button' class='btn btn-sm bg-green waves-effect' onclick='inscribirProyecto($id_proy);'>Inscribirme</button>
+					</td>
+				</tr>
+			";
+
+		}
+
+
+		$plantillaConDatos = $this->montarDatos($plantilla, 'estudiante', $id);
+		$plantillaConDatos = $this->reemplazar( $plantillaConDatos, '{{lista_proyectos}}', $lista);
+		$plantillaConDatos = $this->reemplazar( $plantillaConDatos, 'Listado de Proyectos', $listado);		
+		$this->mostrarVista($plantillaConDatos);	
+	}
+
 	/*************************************************************************************************
 	 ***********************    FUNCIONES DEL PROYECTO    ********************************************
 	 *************************************************************************************************
@@ -1525,7 +1606,7 @@ class controladorInicio extends controlador{
 				}else{
 					if(isset($_SESSION['estudiante'])){
 						$id = $_SESSION['estudiante'];
-						$consulta1 = "DELETE FROM curso_estudiante WHERE id_estudiante = $id AND id_curso = ".$_POST['curso']." ";
+						$consulta1 = "DELETE FROM curso_estudiante WHERE id_estudiante = $id";
 					}
 				}
 			}
